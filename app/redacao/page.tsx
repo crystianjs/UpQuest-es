@@ -1,139 +1,163 @@
-"use client";
+'use client';
 
-import { useState, FormEvent } from 'react';
-import { PlusCircle, BookOpen, CheckCircle2 } from 'lucide-react';
-
-// Dados mockados de exemplo alinhados ao estilo VUNESP
-const redacoesIniciais = [
-  { id: 1, tema: 'Os limites da inteligência artificial na automação do trabalho', nota: 8.5, status: 'Treinado', data: '2026-09-10', anotacao: 'Focar mais em coesão interparágrafos e na citação inicial.' },
-  { id: 2, tema: 'Cidadania digital e os desafios da segurança da informação', nota: 9.0, status: 'Treinado', data: '2026-09-04', anotacao: 'Argumentação sólida com menção à LGPD bem encaixada.' }
-];
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { ArrowLeft, Play, Pause, RotateCcw, Clock, BookOpen, CheckCircle2 } from 'lucide-react';
 
 export default function RedacaoPage() {
-  const [redacoes, setRedacoes] = useState(redacoesIniciais);
-  const [modalAberto, setModalAberto] = useState(false);
+  const router = useRouter();
+  const [tema, setTema] = useState('');
+  const [texto, setTexto] = useState('');
+  
+  // Estados do Cronômetro
+  const [iniciou, setIniciou] = useState(false);
+  const [segundos, setSegundos] = useState(0);
+  const [ativo, setAtivo] = useState(false);
 
-  // Estados do formulário de nova redação
-  const [novoTema, setNovoTema] = useState('');
-  const [novaNota, setNovaNota] = useState('');
-  const [novaAnotacao, setNovaAnotacao] = useState('');
+  // Efeito do cronômetro
+  useEffect(() => {
+    let intervalo: any = null;
+    if (ativo) {
+      intervalo = setInterval(() => {
+        setSegundos((seg) => seg + 1);
+      }, 1000);
+    } else {
+      clearInterval(intervalo);
+    }
+    return () => clearInterval(intervalo);
+  }, [ativo]);
 
-  const cadastrarRedacao = (e: FormEvent) => {
+  // Formatar tempo (MM:SS)
+  const formatarTempo = (totalSegundos: number) => {
+    const mins = Math.floor(totalSegundos / 60);
+    const segs = totalSegundos % 60;
+    return `${String(mins).padStart(2, '0')}:${String(segs).padStart(2, '0')}`;
+  };
+
+  const handleAdicionarTema = (e: React.FormEvent) => {
     e.preventDefault();
-    const nova = {
-      id: redacoes.length + 1,
-      tema: novoTema,
-      nota: Number(novaNota) || 0,
-      status: 'Treinado',
-      data: new Date().toISOString().split('T')[0],
-      anotacao: novaAnotacao
-    };
-    setRedacoes([nova, ...redacoes]);
-    setNovoTema('');
-    setNovaNota('');
-    setNovaAnotacao('');
-    setModalAberto(false);
+    if (tema.trim() !== '') {
+      setIniciou(true);
+      setAtivo(true);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white p-8">
-      <div className="max-w-6xl mx-auto space-y-8">
+    <div className="min-h-screen bg-slate-950 text-white p-6 md:p-10">
+      <div className="max-w-4xl mx-auto space-y-6">
         
-        {/* Cabeçalho e Botão de Novo Treino */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
-            <h1 className="text-2xl font-bold">Treinamento de Redação - Padrão VUNESP</h1>
-            <p className="text-sm text-slate-400">Gerencie seus temas dissertativo-argumentativos e evolução de notas (TJSP)</p>
-          </div>
+        {/* Botão de Voltar e Cabeçalho */}
+        <div className="flex items-center justify-between">
           <button 
-            onClick={() => setModalAberto(true)}
-            className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg font-medium transition"
+            onClick={() => router.push('/desempenho')}
+            className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white bg-slate-900 border border-slate-800 px-4 py-2 rounded-lg transition-colors cursor-pointer"
           >
-            <PlusCircle className="w-5 h-5" /> Adicionar Treino
+            <ArrowLeft className="w-4 h-4" />
+            <span>Voltar ao Painel</span>
           </button>
+          
+          <div className="flex items-center gap-2 text-emerald-400 text-sm font-medium bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-lg">
+            <BookOpen className="w-4 h-4" />
+            <span>Treino de Redação Padrão VUNESP</span>
+          </div>
         </div>
 
-        {/* Listagem de Redações */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {redacoes.map((item) => (
-            <div key={item.id} className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
-              <div className="flex justify-between items-start">
-                <span className="text-xs bg-emerald-950 text-emerald-400 border border-emerald-800 px-2 py-1 rounded">
-                  {item.status}
-                </span>
-                <span className="text-sm font-semibold text-slate-400">Nota: <strong className="text-emerald-400 text-base">{item.nota}</strong></span>
-              </div>
-              <h3 className="font-semibold text-lg text-slate-100">{item.tema}</h3>
-              <p className="text-xs text-slate-400 bg-slate-950 p-3 rounded border border-slate-800/60">
-                <strong>Anotação/Esqueleto:</strong> {item.anotacao}
-              </p>
-              <div className="flex justify-between items-center text-xs text-slate-500 pt-2 border-t border-slate-800">
-                <span>Data: {item.data}</span>
-                <span className="flex items-center gap-1 text-emerald-500">
-                  <CheckCircle2 className="w-4 h-4" /> Concluído
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
+        <h1 className="text-3xl font-bold tracking-tight">Treinador de Redação</h1>
 
-        {/* Modal / Formulário de Cadastro */}
-        {modalAberto && (
-          <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
-            <div className="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-xl p-6 space-y-4 shadow-xl">
-              <h2 className="text-lg font-bold mb-4 text-white">Adicionar Novo Treino de Redação</h2>
-              <form onSubmit={cadastrarRedacao} className="space-y-4">
-                <div>
-                  <label className="block text-xs text-slate-400 mb-1">Tema da Redação</label>
-                  <input 
-                    type="text" 
-                    value={novoTema} 
-                    onChange={(e) => setNovoTema(e.target.value)}
-                    placeholder="Ex: Os impactos da desinformação nas redes sociais..." 
-                    className="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-white focus:outline-none focus:border-emerald-500"
-                    required
-                  />
+        {/* Bloco 1: Inserir Tema */}
+        {!iniciou ? (
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+            <h2 className="text-lg font-semibold text-slate-200">Qual é o tema da redação de hoje?</h2>
+            <form onSubmit={handleAdicionarTema} className="space-y-4">
+              <input 
+                type="text"
+                required
+                placeholder="Ex: Os desafios da cidadania digital na sociedade moderna..."
+                value={tema}
+                onChange={(e) => setTema(e.target.value)}
+                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500 transition-colors"
+              />
+              <button 
+                type="submit"
+                className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold px-6 py-3 rounded-lg transition-colors shadow-lg shadow-emerald-950 flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <Play className="w-4 h-4 fill-current" />
+                <span>Definir Tema e Iniciar</span>
+              </button>
+            </form>
+          </div>
+        ) : (
+          /* Bloco 2: Cronômetro Ativo & Área de Texto */
+          <div className="space-y-6">
+            
+            {/* Barra de Status e Cronômetro ("Podemos iniciar") */}
+            <div className="bg-emerald-950/30 border border-emerald-500/30 rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-4 shadow-xl">
+              <div>
+                <div className="flex items-center gap-2 text-emerald-400 font-semibold mb-1">
+                  <CheckCircle2 className="w-5 h-5" />
+                  <span>Podemos iniciar! Bom treino de redação.</span>
                 </div>
-                <div>
-                  <label className="block text-xs text-slate-400 mb-1">Nota Obtida / Autoavaliação</label>
-                  <input 
-                    type="number" 
-                    step="0.5" 
-                    max="10" 
-                    min="0" 
-                    value={novaNota} 
-                    onChange={(e) => setNovaNota(e.target.value)}
-                    placeholder="Ex: 8.5" 
-                    className="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-white focus:outline-none focus:border-emerald-500"
-                    required
-                  />
+                <p className="text-sm text-slate-300">
+                  <span className="text-slate-500 font-medium">Tema:</span> {tema}
+                </p>
+              </div>
+
+              {/* Visor do Cronômetro */}
+              <div className="flex items-center gap-4 bg-slate-900 border border-slate-800 px-5 py-3 rounded-xl">
+                <div className="flex items-center gap-2 text-2xl font-mono font-bold text-emerald-400">
+                  <Clock className="w-6 h-6 text-emerald-400 animate-pulse" />
+                  <span>{formatarTempo(segundos)}</span>
                 </div>
-                <div>
-                  <label className="block text-xs text-slate-400 mb-1">Anotações, Esqueleto ou Erros de Gramática</label>
-                  <textarea 
-                    value={novaAnotacao} 
-                    onChange={(e) => setNovaAnotacao(e.target.value)}
-                    placeholder="Ex: Cuidado com a pontuação antes de conjunções adversativas." 
-                    className="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-white focus:outline-none focus:border-emerald-500 h-24"
-                  />
-                </div>
-                <div className="flex justify-end gap-2 pt-2">
+                <div className="flex items-center gap-1 border-l border-slate-800 pl-4">
                   <button 
-                    type="button" 
-                    onClick={() => setModalAberto(false)} 
-                    className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded font-medium transition"
+                    onClick={() => setAtivo(!ativo)}
+                    className="p-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors cursor-pointer"
+                    title={ativo ? "Pausar" : "Retomar"}
                   >
-                    Cancelar
+                    {ativo ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
                   </button>
                   <button 
-                    type="submit" 
-                    className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded font-medium transition"
+                    onClick={() => { setSegundos(0); setAtivo(false); }}
+                    className="p-2 bg-slate-800 hover:bg-slate-700 text-red-400 rounded-lg transition-colors cursor-pointer"
+                    title="Zerar Cronômetro"
                   >
-                    Salvar Treino
+                    <RotateCcw className="w-4 h-4" />
                   </button>
                 </div>
-              </form>
+              </div>
             </div>
+
+            {/* Editor de Texto da Redação */}
+            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-slate-200">Escreva sua Redação</h3>
+                <span className="text-xs text-slate-400">
+                  {texto.trim().split(/\s+/).filter(Boolean).length} palavras
+                </span>
+              </div>
+              <textarea 
+                rows={15}
+                placeholder="Comece a redigir seu texto dissertativo-argumentativo padrão VUNESP aqui..."
+                value={texto}
+                onChange={(e) => setTexto(e.target.value)}
+                className="w-full bg-slate-950 border border-slate-800 rounded-lg p-4 text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500 transition-colors leading-relaxed resize-y"
+              />
+              <div className="flex justify-end gap-3">
+                <button 
+                  onClick={() => { setIniciou(false); setTexto(''); setSegundos(0); setAtivo(false); }}
+                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-sm font-medium transition-colors cursor-pointer"
+                >
+                  Mudar Tema
+                </button>
+                <button 
+                  onClick={() => alert('Redação salva com sucesso!')}
+                  className="px-6 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-sm font-semibold transition-colors shadow-lg cursor-pointer"
+                >
+                  Salvar Redação
+                </button>
+              </div>
+            </div>
+
           </div>
         )}
 

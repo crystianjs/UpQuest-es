@@ -4,36 +4,28 @@ import { useState } from 'react';
 import Link from 'next/link';
 
 export default function QuestoesPage() {
-  const [bloco, setBloco] = useState('Bloco II: Conhecimentos em Direito');
-  const [materia, setMateria] = useState('Direito Constitucional');
+  const [materia, setMateria] = useState('Língua Portuguesa');
   const [totalFeitas, setTotalFeitas] = useState('');
   const [acertos, setAcertos] = useState('');
   const [erros, setErros] = useState('');
   const [pontoMelhoria, setPontoMelhoria] = useState('');
-  const [statusMelhoria, setStatusMelhoria] = useState<'pendente' | 'melhoria feita'>('pendente');
   const [sucesso, setSucesso] = useState(false);
 
-  const materiasPorBloco: Record<string, string[]> = {
-    'Bloco I: Língua Portuguesa': ['Língua Portuguesa (24 questões)'],
-    'Bloco II: Conhecimentos em Direito': [
-      'Direito Constitucional',
-      'Direito Administrativo',
-      'Direito Penal',
-      'Direito Processual Penal',
-      'Direito Processual Civil',
-      'Normas da Corregedoria Geral da Justiça'
-    ],
-    'Bloco III: Conhecimentos Gerais': [
-      'Atualidades',
-      'Informática',
-      'Raciocínio Lógico'
-    ]
-  };
-
-  const handleBlocoChange = (novoBloco: string) => {
-    setBloco(novoBloco);
-    setMateria(materiasPorBloco[novoBloco][0]);
-  };
+  // Lista oficial de matérias do edital TJSP
+  const listaMaterias = [
+    'Língua Portuguesa',
+    'Direito Penal',
+    'Direito Processual Penal',
+    'Direito Processual Civil',
+    'Direito Constitucional',
+    'Direito Administrativo',
+    'Normas da Corregedoria',
+    'Matemática',
+    'Raciocínio Lógico',
+    'Informática',
+    'Atualidades',
+    'Estatuto da Pessoa com Deficiência'
+  ];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,6 +39,7 @@ export default function QuestoesPage() {
 
   return (
     <div className="min-h-screen bg-black text-zinc-100 flex flex-col font-sans selection:bg-red-600 selection:text-white">
+      {/* Top Header */}
       <header className="border-b border-zinc-800 bg-zinc-950/80 backdrop-blur sticky top-0 z-50 px-6 py-4 flex items-center justify-between">
         <div className="flex items-center space-x-3">
           <div className="w-3 h-8 bg-red-600 rounded-sm"></div>
@@ -59,6 +52,7 @@ export default function QuestoesPage() {
         </Link>
       </header>
 
+      {/* Main Content */}
       <main className="flex-1 max-w-3xl w-full mx-auto p-6 md:p-10">
         <div className="mb-8 border-b border-zinc-800 pb-4">
           <h2 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
@@ -66,7 +60,7 @@ export default function QuestoesPage() {
             Registro de Desempenho em Questões
           </h2>
           <p className="text-sm text-zinc-400 mt-1">
-            Lance seus blocos de estudo diários por quantidade, acertos, erros e pontos de melhoria.
+            Lance seus blocos de estudo diários por disciplina oficial, quantidade, acertos, erros e pontos de melhoria.
           </p>
         </div>
 
@@ -78,32 +72,22 @@ export default function QuestoesPage() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6 bg-zinc-900/50 border border-zinc-800 p-6 md:p-8 rounded-xl shadow-2xl">
+          
+          {/* Seleção da Matéria do Edital TJSP */}
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-2">Bloco do Edital</label>
-            <select 
-              value={bloco} 
-              onChange={(e) => handleBlocoChange(e.target.value)}
-              className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-3 text-sm text-zinc-200 focus:outline-none focus:border-red-600 transition-colors"
-            >
-              {Object.keys(materiasPorBloco).map((b) => (
-                <option key={b} value={b}>{b}</option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-2">Matéria / Disciplina</label>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-2">Matéria / Disciplina (Edital TJSP)</label>
             <select 
               value={materia} 
               onChange={(e) => setMateria(e.target.value)}
               className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-3 text-sm text-zinc-200 focus:outline-none focus:border-red-600 transition-colors"
             >
-              {materiasPorBloco[bloco].map((mat) => (
+              {listaMaterias.map((mat) => (
                 <option key={mat} value={mat}>{mat}</option>
               ))}
             </select>
           </div>
 
+          {/* Quantitativos: Feitas, Acertos e Erros */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-2">Qtd. Feitas</label>
@@ -113,7 +97,7 @@ export default function QuestoesPage() {
                 min="1"
                 value={totalFeitas}
                 onChange={(e) => setTotalFeitas(e.target.value)}
-                placeholder="Ex: 20"
+                placeholder="Ex: 24"
                 className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-3 text-sm text-zinc-200 focus:outline-none focus:border-red-600 transition-colors"
               />
             </div>
@@ -125,7 +109,7 @@ export default function QuestoesPage() {
                 min="0"
                 value={acertos}
                 onChange={(e) => setAcertos(e.target.value)}
-                placeholder="Ex: 16"
+                placeholder="Ex: 20"
                 className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-3 text-sm text-emerald-400 font-bold focus:outline-none focus:border-red-600 transition-colors"
               />
             </div>
@@ -143,35 +127,16 @@ export default function QuestoesPage() {
             </div>
           </div>
 
+          {/* Ponto de Melhoria */}
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-2">Ponto de Melhoria / Dificuldade Encontrada</label>
             <textarea 
-              rows={3}
+              rows={4}
               value={pontoMelhoria}
               onChange={(e) => setPontoMelhoria(e.target.value)}
-              placeholder="Ex: Confundido prazo de interposição de embargos de declaração..."
+              placeholder="Ex: Revisar crase e regras de colocação pronominal..."
               className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-4 text-sm text-zinc-200 focus:outline-none focus:border-red-600 transition-colors resize-none"
             ></textarea>
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-2">Status da Revisão / Melhoria</label>
-            <div className="flex gap-4">
-              <button
-                type="button"
-                onClick={() => setStatusMelhoria('melhoria feita')}
-                className={`flex-1 py-3 px-4 rounded-lg font-bold text-sm border transition-all ${statusMelhoria === 'melhoria feita' ? 'bg-emerald-600 border-emerald-500 text-white shadow-lg shadow-emerald-900/30' : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-700'}`}
-              >
-                Melhoria Feita
-              </button>
-              <button
-                type="button"
-                onClick={() => setStatusMelhoria('pendente')}
-                className={`flex-1 py-3 px-4 rounded-lg font-bold text-sm border transition-all ${statusMelhoria === 'pendente' ? 'bg-red-600 border-red-500 text-white shadow-lg shadow-red-900/30' : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-700'}`}
-              >
-                Pendente
-              </button>
-            </div>
           </div>
 
           <div className="pt-4 flex justify-end">

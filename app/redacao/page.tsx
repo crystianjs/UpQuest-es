@@ -1,21 +1,20 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Play, Pause, RotateCcw, Clock, BookOpen, CheckCircle2 } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 
 export default function RedacaoPage() {
-  const router = useRouter();
   const [tema, setTema] = useState('');
   const [texto, setTexto] = useState('');
   
-  // Estados do Cronômetro
   const [iniciou, setIniciou] = useState(false);
   const [segundos, setSegundos] = useState(0);
   const [ativo, setAtivo] = useState(false);
+  const [carregando, setCarregando] = useState(false);
+  const [sucesso, setSucesso] = useState(false);
 
-  // Efeito do cronômetro
   useEffect(() => {
     let intervalo: any = null;
     if (ativo) {
@@ -28,7 +27,6 @@ export default function RedacaoPage() {
     return () => clearInterval(intervalo);
   }, [ativo]);
 
-  // Formatar tempo (MM:SS)
   const formatarTempo = (totalSegundos: number) => {
     const mins = Math.floor(totalSegundos / 60);
     const segs = totalSegundos % 60;
@@ -40,6 +38,33 @@ export default function RedacaoPage() {
     if (tema.trim() !== '') {
       setIniciou(true);
       setAtivo(true);
+    }
+  };
+
+  const handleSalvarRedacao = async () => {
+    if (!texto.trim()) return;
+    setCarregando(true);
+
+    try {
+      // Salva na tabela 'redacoes' do Supabase
+      const { error } = await supabase.from('redacoes').insert([
+        {
+          tema,
+          texto,
+          tempo_gasto_segundos: segundos,
+          created_at: new Date().toISOString()
+        }
+      ]);
+
+      if (error) throw error;
+
+      setSucesso(true);
+      setTimeout(() => setSucesso(false), 4000);
+    } catch (err) {
+      console.error('Erro ao salvar redação:', err);
+      alert('Erro ao salvar redação no banco. Verifique se a tabela "redacoes" existe no Supabase.');
+    } finally {
+      setCarregando(false);
     }
   };
 
@@ -69,8 +94,8 @@ export default function RedacaoPage() {
         
         <div className="mb-2 border-b border-zinc-800 pb-4 flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-red-600 animate-pulse"></span>
+            <h2 className="text-2xl font-bold tracking-tight text-white flex items-center gap-3">
+              <span className="w-3.5 h-3.5 rounded-full bg-red-600 shadow-[0_0_12px_rgba(220,38,38,0.8)] animate-pulse"></span>
               Treinador de Redação
             </h2>
             <p className="text-sm text-zinc-400 mt-1">
@@ -84,7 +109,13 @@ export default function RedacaoPage() {
           </div>
         </div>
 
-        {/* Bloco 1: Inserir Tema */}
+        {sucesso && (
+          <div className="p-4 rounded-lg bg-red-950/40 border border-red-600/50 text-red-200 text-sm flex items-center justify-between">
+            <span>Redação salva e gravada no banco com sucesso!</span>
+            <span className="text-xs font-bold text-red-400">SALVO</span>
+          </div>
+        )}
+
         {!iniciou ? (
           <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 md:p-8 shadow-xl space-y-4">
             <h3 className="text-lg font-semibold text-zinc-200">Qual é o tema da redação de hoje?</h3>
@@ -107,10 +138,8 @@ export default function RedacaoPage() {
             </form>
           </div>
         ) : (
-          /* Bloco 2: Cronômetro Ativo & Área de Texto */
           <div className="space-y-6">
             
-            {/* Barra de Status e Cronômetro */}
             <div className="bg-zinc-950 border border-red-600/40 rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-4 shadow-xl relative overflow-hidden">
               <div className="absolute top-0 left-0 w-1 h-full bg-red-600"></div>
               <div>
@@ -123,7 +152,6 @@ export default function RedacaoPage() {
                 </p>
               </div>
 
-              {/* Visor do Cronômetro */}
               <div className="flex items-center gap-4 bg-zinc-900 border border-zinc-800 px-5 py-3 rounded-xl">
                 <div className="flex items-center gap-2 text-2xl font-mono font-bold text-red-400">
                   <Clock className="w-6 h-6 text-red-500 animate-pulse" />
@@ -148,7 +176,6 @@ export default function RedacaoPage() {
               </div>
             </div>
 
-            {/* Editor de Texto da Redação */}
             <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 shadow-xl space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold text-zinc-200 text-sm uppercase tracking-wider">Escreva sua Redação</h3>
@@ -171,10 +198,11 @@ export default function RedacaoPage() {
                   Mudar Tema
                 </button>
                 <button 
-                  onClick={() => alert('Redação salva com sucesso!')}
-                  className="px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-semibold transition-colors shadow-lg shadow-red-600/30 cursor-pointer"
+                  onClick={handleSalvarRedacao}
+                  disabled={carregando}
+                  className="px-6 py-2.5 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white rounded-lg text-sm font-semibold transition-colors shadow-lg shadow-red-600/30 cursor-pointer"
                 >
-                  Salvar Redação
+                  {carregando ? 'Salvando...' : 'Salvar Redação'}
                 </button>
               </div>
             </div>

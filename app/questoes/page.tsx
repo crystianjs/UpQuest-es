@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { supabase } from '@/lib/supabase'; // Certifique-se de que o caminho do seu client supabase está correto
+import { supabase } from '@/lib/supabase';
 
 export default function QuestoesPage() {
   const [materia, setMateria] = useState('Língua Portuguesa');
@@ -14,7 +14,6 @@ export default function QuestoesPage() {
   const [sucesso, setSucesso] = useState(false);
   const [erroMsg, setErroMsg] = useState('');
 
-  // Lista oficial de matérias do edital TJSP
   const listaMaterias = [
     'Língua Portuguesa',
     'Direito Penal',
@@ -36,10 +35,8 @@ export default function QuestoesPage() {
     setErroMsg('');
 
     try {
-      // Inserção real no Supabase
-      // Nota: Certifique-se de que o nome da tabela no seu Supabase seja 'questoes' 
-      // ou ajuste para o nome correto da sua tabela.
-      const { error } = await supabase.from('questoes').insert([
+      // Inserção corrigida para a tabela correta 'user_questions'
+      const { error } = await supabase.from('user_questions').insert([
         {
           materia,
           total_feitas: parseInt(totalFeitas) || 0,
@@ -61,7 +58,7 @@ export default function QuestoesPage() {
       setTimeout(() => setSucesso(false), 4000);
     } catch (err: any) {
       console.error('Erro ao salvar no banco:', err);
-      setErroMsg('Erro ao salvar no banco de dados. Verifique a conexão ou a tabela.');
+      setErroMsg('Erro ao salvar no banco de dados. Verifique os campos da tabela.');
     } finally {
       setCarregando(false);
     }
@@ -91,7 +88,7 @@ export default function QuestoesPage() {
       <main className="flex-1 max-w-3xl w-full mx-auto p-6 md:p-10">
         <div className="mb-8 border-b border-zinc-800 pb-4">
           <h2 className="text-2xl font-bold tracking-tight text-white flex items-center gap-3">
-            {/* Bolinha aumentada e com brilho vermelho */}
+            {/* Bolinha aumentada com brilho */}
             <span className="w-3.5 h-3.5 rounded-full bg-red-600 shadow-[0_0_12px_rgba(220,38,38,0.8)] animate-pulse"></span>
             Registro de Desempenho em Questões
           </h2>
@@ -102,7 +99,7 @@ export default function QuestoesPage() {
 
         {sucesso && (
           <div className="mb-6 p-4 rounded-lg bg-red-950/40 border border-red-600/50 text-red-200 text-sm flex items-center justify-between">
-            <span>Desempenho registrado e gravado no banco com sucesso!</span>
+            <span>Desempenho gravado com sucesso na tabela user_questions!</span>
             <span className="text-xs font-bold text-red-400">SALVO</span>
           </div>
         )}
@@ -114,8 +111,6 @@ export default function QuestoesPage() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6 bg-zinc-900/50 border border-zinc-800 p-6 md:p-8 rounded-xl shadow-2xl">
-          
-          {/* Seleção da Matéria do Edital TJSP */}
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-2">Matéria / Disciplina (Edital TJSP)</label>
             <select 
@@ -129,7 +124,6 @@ export default function QuestoesPage() {
             </select>
           </div>
 
-          {/* Quantitativos: Feitas, Acertos e Erros */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-2">Qtd. Feitas</label>
@@ -169,7 +163,6 @@ export default function QuestoesPage() {
             </div>
           </div>
 
-          {/* Ponto de Melhoria */}
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-2">Ponto de Melhoria / Dificuldade Encontrada</label>
             <textarea 
@@ -187,7 +180,7 @@ export default function QuestoesPage() {
               disabled={carregando}
               className="bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white font-bold px-8 py-3 rounded-lg shadow-lg shadow-red-600/20 transition-all duration-200 text-sm tracking-wide cursor-pointer flex items-center gap-2"
             >
-              {carregando ? 'Salvando no banco...' : 'Salvar Registro de Desempenho'}
+              {carregando ? 'Salvando...' : 'Salvar Registro de Desempenho'}
             </button>
           </div>
         </form>

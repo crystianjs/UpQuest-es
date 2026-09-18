@@ -35,30 +35,30 @@ export default function QuestoesPage() {
     setErroMsg('');
 
     try {
-      // Inserção corrigida para a tabela correta 'user_questions'
       const { error } = await supabase.from('user_questions').insert([
         {
-          materia,
-          total_feitas: parseInt(totalFeitas) || 0,
-          acertos: parseInt(acertos) || 0,
-          erros: parseInt(erros) || 0,
-          ponto_melhoria: pontoMelhoria,
-          created_at: new Date().toISOString()
+          materia: materia,
+          total_feitas: Number(totalFeitas) || 0,
+          acertos: Number(acertos) || 0,
+          erros: Number(erros) || 0,
+          ponto_melhoria: pontoMelhoria || ''
         }
       ]);
 
       if (error) throw error;
 
-      setSucesso(true);
+      // Limpa todos os inputs automaticamente após salvar com sucesso
       setTotalFeitas('');
       setAcertos('');
       setErros('');
       setPontoMelhoria('');
-
+      
+      setSucesso(true);
       setTimeout(() => setSucesso(false), 4000);
+
     } catch (err: any) {
-      console.error('Erro ao salvar no banco:', err);
-      setErroMsg('Erro ao salvar no banco de dados. Verifique os campos da tabela.');
+      console.error('Erro detalhado Supabase:', err);
+      setErroMsg(err.message || 'Erro ao salvar no banco de dados.');
     } finally {
       setCarregando(false);
     }
@@ -88,7 +88,6 @@ export default function QuestoesPage() {
       <main className="flex-1 max-w-3xl w-full mx-auto p-6 md:p-10">
         <div className="mb-8 border-b border-zinc-800 pb-4">
           <h2 className="text-2xl font-bold tracking-tight text-white flex items-center gap-3">
-            {/* Bolinha aumentada com brilho */}
             <span className="w-3.5 h-3.5 rounded-full bg-red-600 shadow-[0_0_12px_rgba(220,38,38,0.8)] animate-pulse"></span>
             Registro de Desempenho em Questões
           </h2>
@@ -99,7 +98,7 @@ export default function QuestoesPage() {
 
         {sucesso && (
           <div className="mb-6 p-4 rounded-lg bg-red-950/40 border border-red-600/50 text-red-200 text-sm flex items-center justify-between">
-            <span>Desempenho gravado com sucesso na tabela user_questions!</span>
+            <span>Desempenho registrado e limpo com sucesso!</span>
             <span className="text-xs font-bold text-red-400">SALVO</span>
           </div>
         )}
@@ -111,6 +110,7 @@ export default function QuestoesPage() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6 bg-zinc-900/50 border border-zinc-800 p-6 md:p-8 rounded-xl shadow-2xl">
+          
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-2">Matéria / Disciplina (Edital TJSP)</label>
             <select 

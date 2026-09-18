@@ -1,116 +1,102 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { ShieldCheck, BookOpen, BarChart2, CheckCircle2, AlertCircle } from 'lucide-react';
-import { supabase } from '../lib/supabase'; // Importa a conexão com o Supabase
+import Link from 'next/link';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('crystianjs09@gmail.com');
+  const [senha, setSenha] = useState('********');
   const [loading, setLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
-  const router = useRouter();
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setErrorMessage('');
-
-    try {
-      // Validação real direto no Banco de Dados do Supabase
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) {
-        throw new Error('Usuário não encontrado ou senha incorreta no banco de dados.');
-      }
-
-      if (data.session) {
-        // Se estiver cadastrado e autenticado, vai para o painel de desempenho
-        router.push('/desempenho');
-      }
-    } catch (err: any) {
-      setErrorMessage(err.message || 'Erro ao tentar realizar login.');
-    } finally {
+    // Simulação de login isolado
+    setTimeout(() => {
       setLoading(false);
-    }
+      window.location.href = '/questoes';
+    }, 1000);
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white flex flex-col justify-center items-center p-4">
-      <div className="max-w-md w-full bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-2xl">
+    <div className="min-h-screen bg-black text-zinc-100 flex items-center justify-center p-4 font-sans selection:bg-red-600 selection:text-white">
+      
+      {/* Card Principal */}
+      <div className="w-full max-w-md bg-zinc-950 border border-zinc-800 rounded-2xl p-8 shadow-2xl shadow-red-950/20 relative overflow-hidden">
         
-        {/* Cabeçalho */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-xl bg-emerald-500/10 text-emerald-400 mb-4 border border-emerald-500/20">
-            <ShieldCheck className="w-8 h-8" />
+        {/* Detalhe visual de luz vermelha superior */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-1 bg-red-600 shadow-lg shadow-red-600"></div>
+
+        {/* Ícone de Escudo / Segurança */}
+        <div className="flex justify-center mb-6">
+          <div className="w-14 h-14 rounded-xl bg-red-950/40 border border-red-600/50 flex items-center justify-center text-red-500 shadow-lg shadow-red-950/50">
+            <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+            </svg>
           </div>
-          <h1 className="text-3xl font-bold tracking-tight text-emerald-400">UpQuest-es</h1>
-          <p className="text-sm text-slate-400 mt-2">
-            Acesso Restrito - Concurso TJSP (VUNESP)
+        </div>
+
+        {/* Títulos */}
+        <div className="text-center mb-8">
+          <h1 className="text-2xl font-black tracking-wider text-white">
+            UPQUEST<span className="text-red-600">-ES</span>
+          </h1>
+          <p className="text-xs font-medium text-zinc-400 mt-1 uppercase tracking-widest">
+            Acesso Restrito — Concurso TJSP (VUNESP)
           </p>
         </div>
 
-        {/* Mensagem de Erro caso não esteja no banco */}
-        {errorMessage && (
-          <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg flex items-center gap-2 text-red-400 text-xs">
-            <AlertCircle className="w-4 h-4 shrink-0" />
-            <span>{errorMessage}</span>
-          </div>
-        )}
-
         {/* Formulário de Login */}
-        <form onSubmit={handleLogin} className="space-y-4">
+        <form onSubmit={handleLogin} className="space-y-5">
           <div>
-            <label className="block text-xs font-medium text-slate-300 uppercase mb-1">E-mail Cadastrado</label>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-2">
+              E-mail Cadastrado
+            </label>
             <input 
               type="email" 
               required
-              placeholder="seu.email@exemplo.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500 transition-colors"
+              className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-3 text-sm text-zinc-200 focus:outline-none focus:border-red-600 transition-colors"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-300 uppercase mb-1">Senha</label>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-2">
+              Senha
+            </label>
             <input 
               type="password" 
               required
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500 transition-colors"
+              value={senha}
+              onChange={(e) => setSenha(e.target.value)}
+              className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-3 text-sm text-zinc-200 focus:outline-none focus:border-red-600 transition-colors"
             />
           </div>
 
           <button 
             type="submit"
             disabled={loading}
-            className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-800 text-white font-semibold py-3 rounded-lg transition-colors shadow-lg shadow-emerald-950 flex items-center justify-center gap-2 cursor-pointer mt-2"
+            className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg shadow-lg shadow-red-600/30 transition-all duration-200 text-sm tracking-wide mt-2 disabled:opacity-50"
           >
-            <span>{loading ? 'Validando acesso...' : 'Entrar na Plataforma'}</span>
+            {loading ? 'Entrando na Plataforma...' : 'Entrar na Plataforma'}
           </button>
         </form>
 
-        {/* Rodapé dos Módulos */}
-        <div className="mt-8 pt-6 border-t border-slate-800 grid grid-cols-3 gap-2 text-center text-xs text-slate-400">
-          <div className="flex flex-col items-center gap-1">
-            <BarChart2 className="w-5 h-5 text-emerald-400" />
-            <span>Desempenho</span>
-          </div>
-          <div className="flex flex-col items-center gap-1">
-            <BookOpen className="w-5 h-5 text-emerald-400" />
-            <span>Redação</span>
-          </div>
-          <div className="flex flex-col items-center gap-1">
-            <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-            <span>Questões TJSP</span>
-          </div>
+        {/* Links rápidos inferiores */}
+        <div className="mt-8 pt-6 border-t border-zinc-900 flex justify-around text-xs text-zinc-400">
+          <Link href="/desempenho" className="hover:text-red-500 transition-colors flex flex-col items-center gap-1">
+            <span className="w-2 h-2 rounded-full bg-red-600"></span>
+            Desempenho
+          </Link>
+          <Link href="/redacao" className="hover:text-red-500 transition-colors flex flex-col items-center gap-1">
+            <span className="w-2 h-2 rounded-full bg-red-600"></span>
+            Redação
+          </Link>
+          <Link href="/questoes" className="hover:text-red-500 transition-colors flex flex-col items-center gap-1">
+            <span className="w-2 h-2 rounded-full bg-red-600"></span>
+            Questões TJSP
+          </Link>
         </div>
 
       </div>

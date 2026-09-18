@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { BarChart3, BookOpen, CheckSquare, LogOut } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '../../lib/supabase';
 
 export default function Navbar() {
   const pathname = usePathname();

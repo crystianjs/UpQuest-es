@@ -1,24 +1,5 @@
-{"timestamp":"00:00:01.394","source":"Server","level":"LOG","message":""}
-{"timestamp":"00:00:01.394","source":"Server","level":"LOG","message":"  We detected TypeScript in your project and reconfigured your tsconfig.json file for you."}
-{"timestamp":"00:00:01.395","source":"Server","level":"LOG","message":"  The following suggested values were added to your tsconfig.json. These values can be changed to fit your project's needs:\n"}
-{"timestamp":"00:00:01.395","source":"Server","level":"LOG","message":"  \t- include was updated to add '.next/dev/types/**/*.ts'"}
-{"timestamp":"00:00:01.395","source":"Server","level":"LOG","message":""}
-{"timestamp":"00:00:01.395","source":"Server","level":"LOG","message":"  The following mandatory changes were made to your tsconfig.json:\n"}
-{"timestamp":"00:00:01.395","source":"Server","level":"LOG","message":"  \t- jsx was set to react-jsx (next.js uses the React automatic runtime)"}
-{"timestamp":"00:00:01.395","source":"Server","level":"LOG","message":""}
-{"timestamp":"00:00:01.901","source":"Server","level":"LOG","message":""}
-{"timestamp":"00:00:05.713","source":"Browser","level":"ERROR","message":"Uncaught Error: supabaseUrl is required.\n    at module evaluation (lib/supabase.ts:6:37)\n    at module evaluation (app/page.tsx:6:1)\n  \u001b[90m4 |\u001b[0m \u001b[36mconst\u001b[0m supabaseAnonKey = process.env.\u001b[33mNEXT_PUBLIC_SUPABASE_ANON_KEY\u001b[0m || \u001b[32m''\u001b[0m;\n  \u001b[90m5 |\u001b[0m\n\u001b[31m\u001b[1m>\u001b[0m \u001b[90m6 |\u001b[0m \u001b[36mexport\u001b[0m \u001b[36mconst\u001b[0m supabase = createClient(supabaseUrl, supabaseAnonKey);\n  \u001b[90m  |\u001b[0m                                     \u001b[31m\u001b[1m^\u001b[0m"}
-{"timestamp":"00:00:05.714","source":"Server","level":"ERROR","message":"[browser] \"\\u001b[31mUncaught Error: supabaseUrl is required.\\u001b[39m\\n\\u001b[31m    at module evaluation (lib/supabase.ts:6:37)\\n    at module evaluation (app/page.tsx:6:1)\\u001b[39m\\n  \\u001b[90m4 |\\u001b[0m \\u001b[36mconst\\u001b[0m supabaseAnonKey = process.env.\\u001b[33mNEXT_PUBLIC_SUPABASE_ANON_KEY\\u001b[0m || \\u001b[32m''\\u001b[0m;\\n  \\u001b[90m5 |\\u001b[0m\\n\\u001b[31m\\u001b[1m>\\u001b[0m \\u001b[90m6 |\\u001b[0m \\u001b[36mexport\\u001b[0m \\u001b[36mconst\\u001b[0m supabase = createClient(supabaseUrl, supabaseAnonKey);\\n  \\u001b[90m  |\\u001b[0m                                     \\u001b[31m\\u001b[1m^\\u001b[0m\""}
-{"timestamp":"00:00:07.011","source":"Server","level":"ERROR","message":"⨯ Error: supabaseUrl is required."}
-{"timestamp":"00:00:08.214","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
-{"timestamp":"00:00:55.408","source":"Server","level":"LOG","message":"  Reload env: .env.local"}
-{"timestamp":"00:00:56.047","source":"Server","level":"ERROR","message":"⨯ Error: supabaseUrl is required."}
-{"timestamp":"00:00:57.857","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
-{"timestamp":"00:01:18.269","source":"Server","level":"LOG","message":"  Reload env: .env.local"}
-{"timestamp":"00:01:19.016","source":"Server","level":"ERROR","message":"⨯ Error: Invalid supabaseUrl: Must be a valid HTTP or HTTPS URL."}
-{"timestamp":"00:01:20.217","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
-{"timestamp":"00:01:42.206","source":"Server","level":"LOG","message":"  Reload env: .env.local"}
-{"timestamp":"00:01:42.727","source":"Server","level":"ERROR","message":"⨯ Error: Invalid supabaseUrl: Must be a valid HTTP or HTTPS URL."}
-{"timestamp":"00:01:43.837","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
-{"timestamp":"00:02:02.382","source":"Server","level":"LOG","message":"  Reload env: .env.local"}
-{"timestamp":"00:02:04.016","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
+{"timestamp":"00:00:01.265","source":"Server","level":"LOG","message":""}
+{"timestamp":"00:00:09.216","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
+{"timestamp":"00:01:23.133","source":"Server","level":"LOG","message":"✓ Compiled in 60ms"}
+{"timestamp":"00:04:35.880","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
+{"timestamp":"00:04:40.066","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ShieldCheck, BookOpen, BarChart2, CheckCircle2, AlertCircle } from 'lucide-react';
-import { supabase } from '@/lib/supabase'; // Importa a conexão com o Supabase
+import { supabase } from '../lib/supabase'; // Importa a conexão com o Supabase
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');

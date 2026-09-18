@@ -395,6 +395,10 @@
     margin-top: calc(var(--spacing) * 2);
   }
 
+  .mt-6 {
+    margin-top: calc(var(--spacing) * 6);
+  }
+
   .mt-8 {
     margin-top: calc(var(--spacing) * 8);
   }
@@ -624,6 +628,16 @@
   @supports (color: color-mix(in lab, red, red)) {
     .border-emerald-500\/20 {
       border-color: color-mix(in oklab, var(--color-emerald-500) 20%, transparent);
+    }
+  }
+
+  .border-emerald-500\/30 {
+    border-color: #00bb7f4d;
+  }
+
+  @supports (color: color-mix(in lab, red, red)) {
+    .border-emerald-500\/30 {
+      border-color: color-mix(in oklab, var(--color-emerald-500) 30%, transparent);
     }
   }
 
@@ -954,6 +968,10 @@
 
     .hover\:text-white:hover {
       color: var(--color-white);
+    }
+
+    .hover\:underline:hover {
+      text-decoration-line: underline;
     }
   }
 

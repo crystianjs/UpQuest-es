@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Navbar from '@/components/Navbar';
-import { supabase } from '@/lib/supabase';
+import Navbar from '../components/Navbar';
+import { supabase } from '../../lib/supabase';
 import { BarChart3, TrendingUp, Award, AlertCircle } from 'lucide-react';
 
 export default function DesempenhoPage() {

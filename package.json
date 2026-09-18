@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@tailwindcss/postcss": "^4.3.3",
     "lucide-react": "latest",
     "next": "latest",
     "react": "latest",
@@ -20,7 +21,7 @@
     "@types/react-dom": "latest",
     "autoprefixer": "latest",
     "postcss": "latest",
-    "tailwindcss": "latest",
+    "tailwindcss": "^4.3.3",
     "typescript": "latest"
   }
 }

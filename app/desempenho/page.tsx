@@ -3,17 +3,18 @@
 import { useEffect, useState } from 'react';
 import Navbar from '../components/Navbar';
 import { supabase } from '@/lib/supabase';
-import { BookOpen, CheckCircle2, AlertCircle, Award, Filter } from 'lucide-react';
+import { BookOpen, CheckCircle2, AlertCircle, Award, Filter, PenTool, Clock } from 'lucide-react';
 
 export default function DesempenhoPage() {
   const [questoes, setQuestoes] = useState<any[]>([]);
-  const [redacoesCount, setRedacoesCount] = useState(0);
+  const [redacoes, setRedacoes] = useState<any[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [filtroMateria, setFiltroMateria] = useState('TODAS');
 
   useEffect(() => {
     async function carregarDados() {
       try {
+        // Buscar questões
         const { data: qData, error: qError } = await supabase
           .from('user_questions')
           .select('*')
@@ -22,14 +23,15 @@ export default function DesempenhoPage() {
         if (qError) throw qError;
         if (qData) setQuestoes(qData);
 
-        // Corrigido para buscar na tabela correta: redaccoes
-        const { count, error: rError } = await supabase
+        // Buscar redações da tabela correta: redaccoes
+        const { data: rData, error: rError } = await supabase
           .from('redaccoes')
-          .select('*', { count: 'exact', head: true });
+          .select('*')
+          .order('created_at', { ascending: false });
 
-        if (!rError && count !== null) {
-          setRedacoesCount(count);
-        }
+        if (rError) throw rError;
+        if (rData) setRedacoes(rData);
+
       } catch (err) {
         console.error('Erro ao buscar dados do painel:', err);
       } finally {
@@ -40,7 +42,7 @@ export default function DesempenhoPage() {
     carregarDados();
   }, []);
 
-  // Cálculos de Métricas Gerais
+  // Cálculos de Métricas Gerais de Questões
   const totalResolvidas = questoes.reduce((acc, curr) => acc + (Number(curr.total_feitas) || 0), 0);
   const totalAcertos = questoes.reduce((acc, curr) => acc + (Number(curr.acertos) || 0), 0);
   const totalErros = questoes.reduce((acc, curr) => acc + (Number(curr.erros) || 0), 0);
@@ -57,10 +59,7 @@ export default function DesempenhoPage() {
     materiasMap[q.materia].erros += Number(q.erros) || 0;
   });
 
-  // Lista de matérias únicas disponíveis nos registros para o filtro
   const materiasDisponiveis = Object.keys(materiasMap);
-
-  // Filtragem dos dados se houver seleção específica
   const materiasFiltradas = filtroMateria === 'TODAS' 
     ? Object.entries(materiasMap) 
     : Object.entries(materiasMap).filter(([mat]) => mat === filtroMateria);
@@ -104,32 +103,30 @@ export default function DesempenhoPage() {
           <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 shadow-xl relative overflow-hidden">
             <div className="absolute top-0 left-0 w-1 h-full bg-red-600"></div>
             <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1">Redações Praticadas</p>
-            <h3 className="text-4xl font-black text-white">{carregando ? '...' : redacoesCount}</h3>
+            <h3 className="text-4xl font-black text-white">{carregando ? '...' : redacoes.length}</h3>
             <p className="text-xs text-zinc-500 mt-2">Padrão VUNESP</p>
           </div>
         </div>
 
-        {/* Seção de Progresso e Filtro por Matéria */}
+        {/* Seção de Progresso por Matéria (Questões) */}
         {Object.keys(materiasMap).length === 0 ? (
-          <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-8 shadow-xl text-center py-16">
+          <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-8 shadow-xl text-center py-12">
             <div className="w-12 h-12 mx-auto rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-red-500 mb-4">
               <AlertCircle className="w-6 h-6" />
             </div>
             <h3 className="text-lg font-bold text-white mb-1">Nenhum registro de questão encontrado</h3>
             <p className="text-sm text-zinc-400 max-w-md mx-auto">
-              Utilize o menu de <span className="text-red-400">Registro de Questões</span> para começar a alimentar seus gráficos e acompanhar seu avanço.
+              Utilize o menu de <span className="text-red-400">Registro de Questões</span> para alimentar seus gráficos de matérias.
             </p>
           </div>
         ) : (
           <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 md:p-8 shadow-xl space-y-6">
-            
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-zinc-800 pb-4">
               <h3 className="text-lg font-bold text-white flex items-center gap-2">
                 <Award className="w-5 h-5 text-red-500" />
                 Desempenho por Disciplina do Edital
               </h3>
 
-              {/* Filtro por Matéria */}
               <div className="flex items-center gap-2 w-full md:w-auto">
                 <Filter className="w-4 h-4 text-red-500" />
                 <select 
@@ -173,9 +170,51 @@ export default function DesempenhoPage() {
                 );
               })}
             </div>
-
           </div>
         )}
+
+        {/* Seção de Histórico de Redações Praticadas */}
+        <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 md:p-8 shadow-xl space-y-6">
+          <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
+            <h3 className="text-lg font-bold text-white flex items-center gap-2">
+              <PenTool className="w-5 h-5 text-red-500" />
+              Histórico de Redações Praticadas ({redacoes.length})
+            </h3>
+            <span className="text-xs text-zinc-400">Padrão Dissertativo VUNESP</span>
+          </div>
+
+          {redacoes.length === 0 ? (
+            <div className="text-center py-10 text-zinc-500 text-sm">
+              Ainda nenhuma redação foi salva. Utilize a aba <span className="text-red-400">Treinar Redação</span> para começar.
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {redacoes.map((red) => {
+                const palavrasCount = red.texto ? red.texto.trim().split(/\s+/).length : 0;
+                return (
+                  <div key={red.id} className="bg-zinc-900/60 border border-zinc-800 p-5 rounded-xl space-y-3">
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
+                      <h4 className="font-bold text-zinc-100 text-sm md:text-base">
+                        Tema: <span className="text-red-400">{red.tema}</span>
+                      </h4>
+                      <div className="flex items-center gap-3">
+                        <span className="text-xs bg-zinc-950 border border-zinc-800 px-3 py-1 rounded-lg text-zinc-300">
+                          Palavras: <strong>{palavrasCount}</strong>
+                        </span>
+                        <span className="text-xs text-zinc-500">
+                          {new Date(red.created_at).toLocaleDateString('pt-BR')}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="bg-zinc-950 p-4 rounded-lg border border-zinc-800/80 text-xs text-zinc-300 max-h-32 overflow-y-auto leading-relaxed whitespace-pre-wrap">
+                      {red.texto}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
 
       </main>
     </div>

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { supabase } from '@/lib/supabase'; // Certifique-se de que o caminho do seu client supabase está correto
 
 export default function QuestoesPage() {
   const [materia, setMateria] = useState('Língua Portuguesa');
@@ -9,7 +10,9 @@ export default function QuestoesPage() {
   const [acertos, setAcertos] = useState('');
   const [erros, setErros] = useState('');
   const [pontoMelhoria, setPontoMelhoria] = useState('');
+  const [carregando, setCarregando] = useState(false);
   const [sucesso, setSucesso] = useState(false);
+  const [erroMsg, setErroMsg] = useState('');
 
   // Lista oficial de matérias do edital TJSP
   const listaMaterias = [
@@ -27,14 +30,41 @@ export default function QuestoesPage() {
     'Estatuto da Pessoa com Deficiência'
   ];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSucesso(true);
-    setTimeout(() => setSucesso(false), 4000);
-    setTotalFeitas('');
-    setAcertos('');
-    setErros('');
-    setPontoMelhoria('');
+    setCarregando(true);
+    setErroMsg('');
+
+    try {
+      // Inserção real no Supabase
+      // Nota: Certifique-se de que o nome da tabela no seu Supabase seja 'questoes' 
+      // ou ajuste para o nome correto da sua tabela.
+      const { error } = await supabase.from('questoes').insert([
+        {
+          materia,
+          total_feitas: parseInt(totalFeitas) || 0,
+          acertos: parseInt(acertos) || 0,
+          erros: parseInt(erros) || 0,
+          ponto_melhoria: pontoMelhoria,
+          created_at: new Date().toISOString()
+        }
+      ]);
+
+      if (error) throw error;
+
+      setSucesso(true);
+      setTotalFeitas('');
+      setAcertos('');
+      setErros('');
+      setPontoMelhoria('');
+
+      setTimeout(() => setSucesso(false), 4000);
+    } catch (err: any) {
+      console.error('Erro ao salvar no banco:', err);
+      setErroMsg('Erro ao salvar no banco de dados. Verifique a conexão ou a tabela.');
+    } finally {
+      setCarregando(false);
+    }
   };
 
   return (
@@ -60,8 +90,9 @@ export default function QuestoesPage() {
       {/* Main Content */}
       <main className="flex-1 max-w-3xl w-full mx-auto p-6 md:p-10">
         <div className="mb-8 border-b border-zinc-800 pb-4">
-          <h2 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-red-600 animate-pulse"></span>
+          <h2 className="text-2xl font-bold tracking-tight text-white flex items-center gap-3">
+            {/* Bolinha aumentada e com brilho vermelho */}
+            <span className="w-3.5 h-3.5 rounded-full bg-red-600 shadow-[0_0_12px_rgba(220,38,38,0.8)] animate-pulse"></span>
             Registro de Desempenho em Questões
           </h2>
           <p className="text-sm text-zinc-400 mt-1">
@@ -71,8 +102,14 @@ export default function QuestoesPage() {
 
         {sucesso && (
           <div className="mb-6 p-4 rounded-lg bg-red-950/40 border border-red-600/50 text-red-200 text-sm flex items-center justify-between">
-            <span>Desempenho registrado e vinculado com sucesso!</span>
+            <span>Desempenho registrado e gravado no banco com sucesso!</span>
             <span className="text-xs font-bold text-red-400">SALVO</span>
+          </div>
+        )}
+
+        {erroMsg && (
+          <div className="mb-6 p-4 rounded-lg bg-red-900/50 border border-red-500 text-red-100 text-sm">
+            <span>{erroMsg}</span>
           </div>
         )}
 
@@ -124,7 +161,7 @@ export default function QuestoesPage() {
                 type="number" 
                 required
                 min="0"
-                value= {erros}
+                value={erros}
                 onChange={(e) => setErros(e.target.value)}
                 placeholder="Ex: 4"
                 className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-3 text-sm text-red-500 font-bold focus:outline-none focus:border-red-600 transition-colors"
@@ -147,9 +184,10 @@ export default function QuestoesPage() {
           <div className="pt-4 flex justify-end">
             <button 
               type="submit"
-              className="bg-red-600 hover:bg-red-700 text-white font-bold px-8 py-3 rounded-lg shadow-lg shadow-red-600/20 transition-all duration-200 text-sm tracking-wide"
+              disabled={carregando}
+              className="bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white font-bold px-8 py-3 rounded-lg shadow-lg shadow-red-600/20 transition-all duration-200 text-sm tracking-wide cursor-pointer flex items-center gap-2"
             >
-              Salvar Registro de Desempenho
+              {carregando ? 'Salvando no banco...' : 'Salvar Registro de Desempenho'}
             </button>
           </div>
         </form>

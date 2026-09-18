@@ -1,7 +1,7 @@
 import './globals.css';
 
 export const metadata = {
-  title: 'UpQuest-es',
+  title: 'UpQuestes - Plataforma de Estudos e Simulados',
   description: 'Sua plataforma de estudos e simulados.',
 };
 

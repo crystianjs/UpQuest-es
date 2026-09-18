@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
+import FraseMotivadora from '../components/FraseMotivadora';
 
 export default function QuestoesPage() {
   const [materia, setMateria] = useState('Língua Portuguesa');
@@ -47,7 +48,7 @@ export default function QuestoesPage() {
 
       if (error) throw error;
 
-      // Limpa todos os inputs automaticamente após salvar com sucesso
+      // Limpa os campos automaticamente
       setTotalFeitas('');
       setAcertos('');
       setErros('');
@@ -85,8 +86,8 @@ export default function QuestoesPage() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 max-w-3xl w-full mx-auto p-6 md:p-10">
-        <div className="mb-8 border-b border-zinc-800 pb-4">
+      <main className="flex-1 max-w-3xl w-full mx-auto p-6 md:p-10 space-y-6">
+        <div className="border-b border-zinc-800 pb-4">
           <h2 className="text-2xl font-bold tracking-tight text-white flex items-center gap-3">
             <span className="w-3.5 h-3.5 rounded-full bg-red-600 shadow-[0_0_12px_rgba(220,38,38,0.8)] animate-pulse"></span>
             Registro de Desempenho em Questões
@@ -96,21 +97,23 @@ export default function QuestoesPage() {
           </p>
         </div>
 
+        {/* Caixa de Reflexão Diária */}
+        <FraseMotivadora />
+
         {sucesso && (
-          <div className="mb-6 p-4 rounded-lg bg-red-950/40 border border-red-600/50 text-red-200 text-sm flex items-center justify-between">
+          <div className="p-4 rounded-lg bg-red-950/40 border border-red-600/50 text-red-200 text-sm flex items-center justify-between">
             <span>Desempenho registrado e limpo com sucesso!</span>
             <span className="text-xs font-bold text-red-400">SALVO</span>
           </div>
         )}
 
         {erroMsg && (
-          <div className="mb-6 p-4 rounded-lg bg-red-900/50 border border-red-500 text-red-100 text-sm">
+          <div className="p-4 rounded-lg bg-red-900/50 border border-red-500 text-red-100 text-sm">
             <span>{erroMsg}</span>
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6 bg-zinc-900/50 border border-zinc-800 p-6 md:p-8 rounded-xl shadow-2xl">
-          
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-2">Matéria / Disciplina (Edital TJSP)</label>
             <select 

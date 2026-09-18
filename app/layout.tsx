@@ -1,4 +1,4 @@
-import './globals.css'; // Puxa o arquivo de estilos globais/Tailwind
+import './globals.css';
 
 export const metadata = {
   title: 'UpQuest-es',
@@ -12,7 +12,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR">
-      <body className="bg-slate-950 text-white min-h-screen">
+      <body className="bg-slate-950 text-white min-h-screen" suppressHydrationWarning={true}>
         {children}
       </body>
     </html>

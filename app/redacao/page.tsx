@@ -13,7 +13,7 @@ export default function RedacaoPage() {
   const [sucesso, setSucesso] = useState(false);
   const [erroMsg, setErroMsg] = useState('');
 
-  // Contagem de palavras do texto digitado
+  // Contagem de palavras para exibição visual
   const totalPalavras = texto.trim() ? texto.trim().split(/\s+/).length : 0;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -27,11 +27,12 @@ export default function RedacaoPage() {
     setErroMsg('');
 
     try {
-      const { error } = await supabase.from('redacoes').insert([
+      // Nome correto da tabela no Supabase: redaccoes
+      const { error } = await supabase.from('redaccoes').insert([
         {
           tema: tema,
-          conteudo: texto,
-          total_palavras: totalPalavras
+          texto: texto,
+          tempo_gasto_segundos: 0 // Valor padrão caso a coluna seja obrigatória na base de dados
         }
       ]);
 

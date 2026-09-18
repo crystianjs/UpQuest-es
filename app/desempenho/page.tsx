@@ -22,8 +22,9 @@ export default function DesempenhoPage() {
         if (qError) throw qError;
         if (qData) setQuestoes(qData);
 
+        // Corrigido para buscar na tabela correta: redaccoes
         const { count, error: rError } = await supabase
-          .from('redacoes')
+          .from('redaccoes')
           .select('*', { count: 'exact', head: true });
 
         if (!rError && count !== null) {

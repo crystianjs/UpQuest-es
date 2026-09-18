@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "@supabase/auth-helpers-nextjs": "^0.15.0",
+    "@supabase/supabase-js": "^2.116.0",
+    "lucide-react": "^1.47.0",
+    "recharts": "^3.10.1"
+  }
+}

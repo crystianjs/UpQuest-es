@@ -42,14 +42,19 @@ export default function QuestoesPage() {
       {/* Top Header */}
       <header className="border-b border-zinc-800 bg-zinc-950/80 backdrop-blur sticky top-0 z-50 px-6 py-4 flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <div className="w-3 h-8 bg-red-600 rounded-sm"></div>
+          <div className="w-3 h-8 bg-red-600 rounded-sm shadow-lg shadow-red-600/50"></div>
           <h1 className="text-xl font-black tracking-wider text-white">
             UPQUEST<span className="text-red-600">-ES</span> <span className="text-xs font-normal text-zinc-400 ml-2">| TJSP 2026</span>
           </h1>
         </div>
-        <Link href="/" className="text-sm font-medium text-zinc-400 hover:text-red-500 transition-colors">
-          ← Voltar ao Dashboard
-        </Link>
+        <div className="flex items-center gap-4">
+          <Link href="/desempenho" className="text-sm font-medium text-zinc-400 hover:text-red-500 transition-colors">
+            Desempenho & Gráficos
+          </Link>
+          <Link href="/desempenho" className="text-sm font-medium bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg shadow-lg shadow-red-600/30 transition-all">
+            ← Voltar ao Painel Geral
+          </Link>
+        </div>
       </header>
 
       {/* Main Content */}
@@ -119,7 +124,7 @@ export default function QuestoesPage() {
                 type="number" 
                 required
                 min="0"
-                value={erros}
+                value= {erros}
                 onChange={(e) => setErros(e.target.value)}
                 placeholder="Ex: 4"
                 className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-3 text-sm text-red-500 font-bold focus:outline-none focus:border-red-600 transition-colors"

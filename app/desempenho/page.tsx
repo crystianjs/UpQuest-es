@@ -1,102 +1,65 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import Navbar from '../components/Navbar';
-import { supabase } from '../../lib/supabase';
-import { BarChart3, TrendingUp, Award, AlertCircle } from 'lucide-react';
 
 export default function DesempenhoPage() {
-  const [loading, setLoading] = useState(true);
-  const [userEmail, setUserEmail] = useState<string | null>(null);
-  const [estatisticas, setEstatisticas] = useState<any[]>([]);
-
-  useEffect(() => {
-    async function loadUserData() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        setUserEmail(user.email || null);
-        
-        // Exemplo de busca de dados específicos deste user_id na tabela do Supabase
-        const { data, error } = await supabase
-          .from('user_questions')
-          .select('*')
-          .eq('user_id', user.id);
-
-        if (!error && data) {
-          setEstatisticas(data);
-        }
-      }
-      setLoading(false);
-    }
-    loadUserData();
-  }, []);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center">
-        <p className="text-emerald-400 animate-pulse">Carregando seu ambiente exclusivo...</p>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
+    <div className="min-h-screen bg-black text-zinc-100 font-sans selection:bg-red-600 selection:text-white">
       <Navbar />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Boas-vindas personalizado */}
-        <div className="mb-8 bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <main className="max-w-7xl mx-auto px-6 py-8 space-y-8">
+        
+        {/* Cabeçalho do Painel */}
+        <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-white">Painel de Desempenho</h1>
-            <p className="text-sm text-slate-400 mt-1">
-              Ambiente individual vinculado à conta: <span className="text-emerald-400 font-medium">{userEmail}</span>
+            <h1 className="text-2xl font-bold tracking-tight text-white">Painel de Desempenho</h1>
+            <p className="text-sm text-zinc-400 mt-1">
+              Ambiente individual vinculado à conta: <span className="text-red-400">crystianjs09@gmail.com</span>
             </p>
           </div>
-          <div className="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 px-4 py-2 rounded-xl text-emerald-400 text-sm font-medium">
-            <TrendingUp className="w-4 h-4" />
-            <span>Foco: Escrevente TJSP (VUNESP)</span>
+          <div className="bg-red-950/40 border border-red-600/40 px-4 py-2 rounded-xl text-xs font-semibold text-red-400 flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-red-600 animate-pulse"></span>
+            Foco: Escrevente TJSP (VUNESP)
           </div>
         </div>
 
-        {/* Cards de Métricas / Gráficos */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
-            <div className="flex items-center justify-between text-slate-400 mb-2">
-              <span className="text-xs uppercase font-semibold">Questões Resolvidas</span>
-              <BarChart3 className="w-5 h-5 text-emerald-400" />
-            </div>
-            <p className="text-3xl font-bold text-white">0</p>
-            <span className="text-xs text-slate-500 mt-1 block">Matérias do edital</span>
+        {/* Cards de Métricas */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 shadow-xl relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-1 h-full bg-red-600"></div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1">Questões Resolvidas</p>
+            <h3 className="text-4xl font-black text-white">0</h3>
+            <p className="text-xs text-zinc-500 mt-2">Matérias do edital</p>
           </div>
 
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
-            <div className="flex items-center justify-between text-slate-400 mb-2">
-              <span className="text-xs uppercase font-semibold">Taxa de Acerto Geral</span>
-              <Award className="w-5 h-5 text-emerald-400" />
-            </div>
-            <p className="text-3xl font-bold text-white">0%</p>
-            <span className="text-xs text-slate-500 mt-1 block">Baseado nas suas respostas</span>
+          <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 shadow-xl relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-1 h-full bg-red-600"></div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1">Taxa de Acerto Geral</p>
+            <h3 className="text-4xl font-black text-white">0%</h3>
+            <p className="text-xs text-zinc-500 mt-2">Baseado nas suas respostas</p>
           </div>
 
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
-            <div className="flex items-center justify-between text-slate-400 mb-2">
-              <span className="text-xs uppercase font-semibold">Redações Praticadas</span>
-              <TrendingUp className="w-5 h-5 text-emerald-400" />
-            </div>
-            <p className="text-3xl font-bold text-white">0</p>
-            <span className="text-xs text-slate-500 mt-1 block">Padrão VUNESP</span>
+          <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 shadow-xl relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-1 h-full bg-red-600"></div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1">Redações Praticadas</p>
+            <h3 className="text-4xl font-black text-white">0</h3>
+            <p className="text-xs text-zinc-500 mt-2">Padrão VUNESP</p>
           </div>
         </div>
 
-        {/* Seção de Matérias do Edital TJSP */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
-          <h2 className="text-lg font-bold text-white mb-4">Progresso por Matéria do Edital</h2>
-          <div className="text-center py-12 border border-dashed border-slate-800 rounded-xl">
-            <AlertCircle className="w-8 h-8 text-slate-600 mx-auto mb-2" />
-            <p className="text-sm text-slate-400">Nenhum registro de questão encontrado para a sua conta ainda.</p>
-            <p className="text-xs text-slate-500 mt-1">Utilize o menu de Registro de Questões para começar a alimentar seus gráficos.</p>
+        {/* Seção de Progresso por Matéria */}
+        <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-8 shadow-xl text-center py-16">
+          <div className="w-12 h-12 mx-auto rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-red-500 mb-4">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+            </svg>
           </div>
+          <h3 className="text-lg font-bold text-white mb-1">Nenhum registro de questão encontrado</h3>
+          <p className="text-sm text-zinc-400 max-w-md mx-auto">
+            Utilize o menu de <span className="text-red-400">Registro de Questões</span> para começar a alimentar seus gráficos e acompanhar seu avanço.
+          </p>
         </div>
+
       </main>
     </div>
   );

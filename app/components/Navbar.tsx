@@ -13,7 +13,7 @@ export default function Navbar() {
       <div className="flex items-center space-x-3">
         <div className="w-3 h-8 bg-red-600 rounded-sm shadow-lg shadow-red-600/50"></div>
         <span className="text-xl font-black tracking-wider text-white">
-          UPQUEST<span className="text-red-600">-ES</span>
+          UPQUESTO<span className="text-red-600">ES</span>
         </span>
         <span className="hidden sm:inline-block text-xs font-semibold px-2.5 py-1 rounded-full bg-red-950/60 text-red-400 border border-red-600/30">
           TJSP / VUNESP

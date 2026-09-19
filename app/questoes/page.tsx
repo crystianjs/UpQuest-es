@@ -72,7 +72,7 @@ export default function QuestoesPage() {
         <div className="flex items-center space-x-3">
           <div className="w-3 h-8 bg-red-600 rounded-sm shadow-lg shadow-red-600/50"></div>
           <h1 className="text-xl font-black tracking-wider text-white">
-            UPQUEST<span className="text-red-600">-ES</span> <span className="text-xs font-normal text-zinc-400 ml-2">| TJSP 2026</span>
+            UPQUESTO<span className="text-red-600">ES</span> <span className="text-xs font-normal text-zinc-400 ml-2">| TJSP 2026</span>
           </h1>
         </div>
         <div className="flex items-center gap-4">

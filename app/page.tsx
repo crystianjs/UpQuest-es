@@ -51,7 +51,7 @@ export default function LoginPage() {
 
         <div className="text-center mb-8">
           <h1 className="text-2xl font-black tracking-wider text-white">
-            UPQUEST<span className="text-red-600">OS</span>
+            UPQUEST<span className="text-red-600">OES</span>
           </h1>
           <p className="text-xs font-medium text-zinc-400 mt-1 uppercase tracking-widest">
             Acesso Restrito — Concurso TJSP (VUNESP)

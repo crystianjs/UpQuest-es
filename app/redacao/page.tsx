@@ -27,7 +27,8 @@ export default function RedacaoPage() {
     verificarSessao();
   }, [router]);
 
-  const palavrasCount = texto.trim() ? texto.trim().split(/\s+/).length : 0;
+  // Contador de palavras corrigido e rigoroso
+  const palavrasCount = texto.trim() === '' ? 0 : texto.trim().split(/\s+/).length;
 
   async function handleSalvarRedacao(e: React.FormEvent) {
     e.preventDefault();
@@ -48,7 +49,7 @@ export default function RedacaoPage() {
           tema: tema,
           texto: texto,
           tempo_gasto_segundos: 0,
-          user_id: userId // Vincula rigorosamente ao UUID do utilizador autenticado
+          user_id: userId
         }
       ]);
 
@@ -74,7 +75,7 @@ export default function RedacaoPage() {
         <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 shadow-xl">
           <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
             <PenTool className="w-6 h-6 text-red-500" />
-            Treino de Redação Padrão VUNESP — UPQUESTOS
+            Treino de Redação Padrão VUNESP — UPQUESTOES
           </h1>
           <p className="text-sm text-zinc-400 mt-1">
             Treine e guarde as suas redações de forma totalmente isolada.

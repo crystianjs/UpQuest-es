@@ -22,7 +22,7 @@ export default function Navbar() {
       {/* Logotipo */}
       <div className="flex items-center gap-6">
         <Link href="/desempenho" className="font-black text-red-600 tracking-wider text-lg flex items-center">
-          UPQUEST<span className="text-white">OS</span>
+          UPQUEST<span className="text-white">OES</span>
         </Link>
         <div className="hidden lg:flex items-center gap-2 bg-red-950/30 border border-red-600/30 px-3 py-1 rounded-lg text-xs font-semibold text-red-400">
           <ShieldAlert className="w-3.5 h-3.5" />

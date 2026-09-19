@@ -4,8 +4,9 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '../components/Navbar';
 import { supabase } from '@/lib/supabase';
-import { CheckCircle, AlertCircle, BookOpen } from 'lucide-react';
+import { BookOpen, CheckCircle, AlertCircle } from 'lucide-react';
 
+// Matérias oficiais do TJSP (VUNESP)
 const MATERIAS_TJSP = [
   'Língua Portuguesa',
   'Direito Penal',
@@ -24,9 +25,10 @@ const MATERIAS_TJSP = [
 export default function QuestoesPage() {
   const router = useRouter();
   const [materia, setMateria] = useState(MATERIAS_TJSP[0]);
-  const [totalFeitas, setTotalFeitas] = useState('');
-  const [acertos, setAcertos] = useState('');
-  const [erros, setErros] = useState('');
+  const [totalFeitas, setTotalFeitas] = useState<number | ''>(1);
+  const [acertos, setAcertos] = useState<number | ''>(1);
+  const [erros, setErros] = useState<number | ''>(0);
+  
   const [salvando, setSalvando] = useState(false);
   const [sucesso, setSucesso] = useState(false);
   const [erro, setErro] = useState('');
@@ -44,20 +46,33 @@ export default function QuestoesPage() {
     verificarSessao();
   }, [router]);
 
+  // Atualiza automaticamente os erros quando altera o total ou acertos
+  const handleTotalChange = (val: string) => {
+    const num = val === '' ? '' : Number(val);
+    setTotalFeitas(num);
+    if (typeof num === 'number' && typeof acertos === 'number' && num >= acertos) {
+      setErros(num - acertos);
+    }
+  };
+
+  const handleAcertosChange = (val: string) => {
+    const num = val === '' ? '' : Number(val);
+    setAcertos(num);
+    if (typeof num === 'number' && typeof totalFeitas === 'number' && totalFeitas >= num) {
+      setErros(totalFeitas - num);
+    }
+  };
+
   async function handleSalvarQuestoes(e: React.FormEvent) {
     e.preventDefault();
     if (!userId) return;
 
-    const feitasNum = parseInt(totalFeitas) || 0;
-    const acertosNum = parseInt(acertos) || 0;
-    const errosNum = parseInt(erros) || 0;
-
-    if (feitasNum <= 0) {
-      setErro('Insira um número válido de questões feitas.');
+    if (totalFeitas === '' || acertos === '' || erros === '') {
+      setErro('Preencha todos os campos numéricos corretamente.');
       return;
     }
 
-    if (acertosNum + errosNum !== feitasNum) {
+    if (acertos + erros !== totalFeitas) {
       setErro('A soma de acertos e erros deve ser igual ao total de questões feitas.');
       return;
     }
@@ -70,22 +85,23 @@ export default function QuestoesPage() {
       const { error } = await supabase.from('user_questions').insert([
         {
           materia: materia,
-          total_feitas: feitasNum,
-          acertos: acertosNum,
-          erros: errosNum,
-          user_id: userId // Vincula rigorosamente ao UUID do utilizador autenticado
+          total_feitas: totalFeitas,
+          acertos: acertos,
+          erros: erros,
+          user_id: userId
         }
       ]);
 
       if (error) throw error;
 
       setSucesso(true);
-      setTotalFeitas('');
-      setAcertos('');
-      setErros('');
+      // Reset parcial útil
+      setTotalFeitas(1);
+      setAcertos(1);
+      setErros(0);
     } catch (err: any) {
-      console.error('Erro ao guardar questões:', err);
-      setErro('Erro ao guardar o registo de questões.');
+      console.error('Detalhe completo do erro do Supabase:', err);
+      setErro(`Erro ao guardar: ${err.message || 'Erro desconhecido'}`);
     } finally {
       setSalvando(false);
     }
@@ -95,12 +111,12 @@ export default function QuestoesPage() {
     <div className="min-h-screen bg-black text-zinc-100 font-sans selection:bg-red-600 selection:text-white">
       <Navbar />
 
-      <main className="max-w-3xl mx-auto px-6 py-8 space-y-8">
+      <main className="max-w-4xl mx-auto px-6 py-8 space-y-8">
         
         <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 shadow-xl">
           <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
             <BookOpen className="w-6 h-6 text-red-500" />
-            Registo de Questões — UPQUESTOS
+            Registo de Questões — UPQUESTOES
           </h1>
           <p className="text-sm text-zinc-400 mt-1">
             Registe o seu progresso individual isolado por conta.
@@ -141,10 +157,10 @@ export default function QuestoesPage() {
               <label className="text-xs font-bold uppercase tracking-wider text-zinc-400">Total Feitas</label>
               <input 
                 type="number" 
-                min="1"
+                min={1}
+                required
                 value={totalFeitas}
-                onChange={(e) => setTotalFeitas(e.target.value)}
-                placeholder="Ex: 20"
+                onChange={(e) => handleTotalChange(e.target.value)}
                 className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-zinc-100 focus:outline-none focus:border-red-600 transition-colors"
               />
             </div>
@@ -153,10 +169,10 @@ export default function QuestoesPage() {
               <label className="text-xs font-bold uppercase tracking-wider text-zinc-400">Acertos</label>
               <input 
                 type="number" 
-                min="0"
+                min={0}
+                required
                 value={acertos}
-                onChange={(e) => setAcertos(e.target.value)}
-                placeholder="Ex: 16"
+                onChange={(e) => handleAcertosChange(e.target.value)}
                 className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-zinc-100 focus:outline-none focus:border-red-600 transition-colors"
               />
             </div>
@@ -165,11 +181,10 @@ export default function QuestoesPage() {
               <label className="text-xs font-bold uppercase tracking-wider text-zinc-400">Erros</label>
               <input 
                 type="number" 
-                min="0"
+                min={0}
+                readOnly
                 value={erros}
-                onChange={(e) => setErros(e.target.value)}
-                placeholder="Ex: 4"
-                className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-zinc-100 focus:outline-none focus:border-red-600 transition-colors"
+                className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-zinc-400 cursor-not-allowed"
               />
             </div>
           </div>

@@ -84,6 +84,15 @@ export default function CadernoRevisaoPage() {
     ? postits
     : postits.filter(p => p.materia.toLowerCase() === filtroCategoria.toLowerCase() || p.categoria.toLowerCase() === filtroCategoria.toLowerCase());
 
+  // Função auxiliar para forçar a quebra de linha visual automática caso venha colado
+  const formatarConteudoTópicos = (texto: string) => {
+    if (!texto) return '';
+    // Substitui instâncias como " 2. ", " 3. ", " 4. " por quebras de linha duplas automaticamente
+    return texto
+      .replace(/\s+(\d+\.)/g, '\n\n$1')
+      .replace(/^(\d+\.)/g, '$1');
+  };
+
   // Adicionar via JSON
   const handleAdicionarJson = async () => {
     if (!userId) return;
@@ -335,10 +344,10 @@ O campo 'cor' deve ser estritamente um destes: "amarelo", "azul", "verde", "rosa
                     {item.titulo}
                   </h3>
 
-                  {/* Scroll interno com o texto em tópicos separados e o checklist */}
+                  {/* Scroll interno com o texto formatado automaticamente em tópicos e o checklist */}
                   <div className="max-h-[240px] overflow-y-auto pr-1 space-y-3 scrollbar-thin">
                     <p className="text-xs leading-relaxed opacity-90 whitespace-pre-line">
-                      {item.conteudo}
+                      {formatarConteudoTópicos(item.conteudo)}
                     </p>
 
                     {item.checklist && item.checklist.length > 0 && (
@@ -439,7 +448,7 @@ O campo 'cor' deve ser estritamente um destes: "amarelo", "azul", "verde", "rosa
               </button>
               <button 
                 onClick={handleAdicionarJson}
-                className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold shadow-lg shadow-red-600/20 flex items-center gap-2 cursor-pointer transition-all"
+                className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold shadow-lg shadow-red-600/20 flex items-center gap-2 cursor-pointer transition-all"
               >
                 <Code className="w-4 h-4" /> Salvar no Banco
               </button>

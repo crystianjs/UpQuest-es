@@ -103,7 +103,7 @@ export default function LoginPage() {
         </form>
 
         <div className="mt-8 pt-6 border-t border-zinc-900 text-center text-xs text-zinc-500">
-          Não possui cadastro? <Link href="#" className="text-red-500 hover:underline">Cadastre-se</Link>
+          Não possui cadastro?{'Teste'} <Link href="#" className="text-red-500 hover:underline">Cadastre-se</Link>
         </div>
       </div>
     </div>

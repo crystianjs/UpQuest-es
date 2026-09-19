@@ -113,7 +113,7 @@ export default function CadernoRevisaoPage() {
 
       setJsonInput('');
       setModalJsonOpen(false);
-      alert('Resumo com padrão VUNESP salvo com sucesso no Banco!');
+      alert('Resumo estruturado salvo com sucesso no Banco!');
     } catch (err) {
       console.error(err);
       alert('Erro no formato JSON. Verifique se copiou corretamente.');
@@ -182,7 +182,7 @@ export default function CadernoRevisaoPage() {
   "materia": "Nome exato da matéria (ex: Língua Portuguesa, Direito Constitucional, etc.)",
   "categoria": "TJSP",
   "titulo": "Título curto focado no tema exato cobrado pela VUNESP",
-  "conteudo": "1. Primeiro ponto essencial da teoria ou regra técnica.\n2. Segundo ponto essencial explicando a base da matéria.\n3. Terceiro ponto de fixação estruturado em tópicos um embaixo do outro.",
+  "conteudo": "1. Primeiro ponto essencial da teoria ou regra técnica.\\n\\n2. Segundo ponto essencial explicando a base da matéria.\\n\\n3. Terceiro ponto de fixação estruturado em tópicos um embaixo do outro.",
   "checklist": [
     { "texto": "Regra Correta / Solução exata exigida pela norma (ex: Os pronomes corretos ou direitos garantidos)", "concluido": false },
     { "texto": "A Pegadinha da VUNESP / O erro clássico ou exceção falsa que a banca tenta empurrar", "concluido": false }
@@ -335,9 +335,9 @@ O campo 'cor' deve ser estritamente um destes: "amarelo", "azul", "verde", "rosa
                     {item.titulo}
                   </h3>
 
-                  {/* Scroll interno com o texto e o checklist */}
+                  {/* Scroll interno com o texto em tópicos separados e o checklist */}
                   <div className="max-h-[240px] overflow-y-auto pr-1 space-y-3 scrollbar-thin">
-                    <p className="text-xs leading-relaxed opacity-90 whitespace-pre-wrap">
+                    <p className="text-xs leading-relaxed opacity-90 whitespace-pre-line">
                       {item.conteudo}
                     </p>
 
@@ -425,7 +425,7 @@ O campo 'cor' deve ser estritamente um destes: "amarelo", "azul", "verde", "rosa
                 rows={8}
                 value={jsonInput}
                 onChange={(e) => setJsonInput(e.target.value)}
-                placeholder={`{\n  "materia": "Língua Portuguesa",\n  "categoria": "TJSP",\n  "titulo": "Pronomes Demonstrativos",\n  "conteudo": "1. Emprego temporal.\\n2. Emprego espacial.\\n3. Coesão textual.",\n  "checklist": [\n    { "texto": "Regra Correta...", "concluido": false },\n    { "texto": "Pegadinha...", "concluido": false }\n  ],\n  "status": "Pendente",\n  "cor": "amarelo"\n}`}
+                placeholder={`{\n  "materia": "Língua Portuguesa",\n  "categoria": "TJSP",\n  "titulo": "Pronomes Demonstrativos",\n  "conteudo": "1. Emprego temporal.\\n\\n2. Emprego espacial.\\n\\n3. Coesão textual.",\n  "checklist": [\n    { "texto": "Regra Correta...", "concluido": false },\n    { "texto": "Pegadinha...", "concluido": false }\n  ],\n  "status": "Pendente",\n  "cor": "amarelo"\n}`}
                 className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs font-mono text-zinc-100 focus:outline-none focus:border-red-600 transition-colors"
               />
             </div>
@@ -439,7 +439,7 @@ O campo 'cor' deve ser estritamente um destes: "amarelo", "azul", "verde", "rosa
               </button>
               <button 
                 onClick={handleAdicionarJson}
-                className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold shadow-lg shadow-red-600/20 flex items-center gap-2 cursor-pointer transition-all"
+                className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold shadow-lg shadow-red-600/20 flex items-center gap-2 cursor-pointer transition-all"
               >
                 <Code className="w-4 h-4" /> Salvar no Banco
               </button>

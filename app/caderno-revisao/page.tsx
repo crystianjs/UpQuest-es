@@ -113,7 +113,7 @@ export default function CadernoRevisaoPage() {
 
       setJsonInput('');
       setModalJsonOpen(false);
-      alert('Resumo com checklist salvo com sucesso no Banco!');
+      alert('Resumo com padrão VUNESP salvo com sucesso no Banco!');
     } catch (err) {
       console.error(err);
       alert('Erro no formato JSON. Verifique se copiou corretamente.');
@@ -128,11 +128,9 @@ export default function CadernoRevisaoPage() {
     const novoChecklist = [...postAlvo.checklist];
     novoChecklist[index].concluido = !novoChecklist[index].concluido;
 
-    // Atualiza estado local otimista
     const atualizados = postits.map(p => p.id === postId ? { ...p, checklist: novoChecklist } : p);
     setPostits(atualizados);
 
-    // Salva no banco
     await supabase
       .from('caderno_revisao')
       .update({ checklist: novoChecklist })
@@ -178,16 +176,16 @@ export default function CadernoRevisaoPage() {
     }
   };
 
-  const promptIaRecomendado = `Com base nos meus erros nas questões de [INSERIR MATÉRIA E O TEMA AQUI], crie um resumo objetivo, cirúrgico e adaptado para qualquer matéria do TJSP. O retorno deve ser estritamente em formato de objeto JSON puro (sem blocos de código markdown ou texto extra fora do JSON), seguindo exatamente esta estrutura:
+  const promptIaRecomendado = `Com base nos meus erros nas questões de [INSERIR MATÉRIA E O TEMA AQUI], crie um resumo objetivo e cirúrgico adaptado para o concurso de Escrevente do TJSP. O retorno deve ser estritamente em formato de objeto JSON puro (sem blocos de código markdown ou texto extra fora do JSON), seguindo exatamente esta estrutura:
 
 {
-  "materia": "Nome exato da matéria (ex: Direito Administrativo, Informática, Língua Portuguesa)",
+  "materia": "Nome exato da matéria (ex: Língua Portuguesa, Direito Constitucional, etc.)",
   "categoria": "TJSP",
-  "titulo": "Título curto focado no ponto exato de cobrança da VUNESP",
-  "conteudo": "Explique de forma direta e técnica: 1) O que a banca mais cobra sobre este tema; 2) O que NÃO PODE (as principais pegadinhas, armadilhas textuais e falsas premissas que a VUNESP usa para confundir); 3) Como a prova costuma contextualizar a cobrança.",
+  "titulo": "Título curto focado no tema exato cobrado pela VUNESP",
+  "conteudo": "1. Primeiro ponto essencial da teoria ou regra técnica.\n2. Segundo ponto essencial explicando a base da matéria.\n3. Terceiro ponto de fixação estruturado em tópicos um embaixo do outro.",
   "checklist": [
-    { "texto": "Dica de Ouro / Macete prático ou regra de exceção para nunca mais errar este ponto", "concluido": false },
-    { "texto": "Ponto crítico de atenção secundário cobrado pela banca", "concluido": false }
+    { "texto": "Regra Correta / Solução exata exigida pela norma (ex: Os pronomes corretos ou direitos garantidos)", "concluido": false },
+    { "texto": "A Pegadinha da VUNESP / O erro clássico ou exceção falsa que a banca tenta empurrar", "concluido": false }
   ],
   "status": "Pendente",
   "cor": "amarelo"
@@ -245,7 +243,7 @@ O campo 'cor' deve ser estritamente um destes: "amarelo", "azul", "verde", "rosa
                 </span>
               </div>
               <p className="text-xs text-zinc-400 mt-1">
-                Post-its Inteligentes com Padrão VUNESP e Checklists
+                Post-its em Tópicos, Soluções & Pegadinhas VUNESP
               </p>
             </div>
           </div>
@@ -345,7 +343,7 @@ O campo 'cor' deve ser estritamente um destes: "amarelo", "azul", "verde", "rosa
 
                     {item.checklist && item.checklist.length > 0 && (
                       <div className="space-y-1.5 pt-2 border-t border-black/10">
-                        <span className="text-[10px] uppercase font-bold opacity-60 block">Checklist / Dica de Ouro</span>
+                        <span className="text-[10px] uppercase font-bold opacity-60 block">Solução & Pegadinha VUNESP</span>
                         {item.checklist.map((check, idx) => (
                           <div 
                             key={idx} 
@@ -427,7 +425,7 @@ O campo 'cor' deve ser estritamente um destes: "amarelo", "azul", "verde", "rosa
                 rows={8}
                 value={jsonInput}
                 onChange={(e) => setJsonInput(e.target.value)}
-                placeholder={`{\n  "materia": "Direito Administrativo",\n  "categoria": "TJSP",\n  "titulo": "Atos Administrativos",\n  "conteudo": "A banca cobra...",\n  "checklist": [\n    { "texto": "Dica de Ouro...", "concluido": false }\n  ],\n  "status": "Pendente",\n  "cor": "amarelo"\n}`}
+                placeholder={`{\n  "materia": "Língua Portuguesa",\n  "categoria": "TJSP",\n  "titulo": "Pronomes Demonstrativos",\n  "conteudo": "1. Emprego temporal.\\n2. Emprego espacial.\\n3. Coesão textual.",\n  "checklist": [\n    { "texto": "Regra Correta...", "concluido": false },\n    { "texto": "Pegadinha...", "concluido": false }\n  ],\n  "status": "Pendente",\n  "cor": "amarelo"\n}`}
                 className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs font-mono text-zinc-100 focus:outline-none focus:border-red-600 transition-colors"
               />
             </div>
@@ -510,12 +508,12 @@ O campo 'cor' deve ser estritamente um destes: "amarelo", "azul", "verde", "rosa
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-zinc-400 font-semibold">Conteúdo / O que a banca cobra e pegadinhas</label>
+                <label className="text-zinc-400 font-semibold">Conteúdo em Tópicos</label>
                 <textarea 
                   rows={5}
                   value={postitEmEdicao.conteudo}
                   onChange={(e) => setPostitEmEdicao({...postitEmEdicao, conteudo: e.target.value})}
-                  className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-zinc-100 focus:outline-none focus:border-red-600 leading-relaxed"
+                  className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-zinc-100 focus:outline-none focus:border-red-600 leading-relaxed font-mono text-[11px]"
                   required
                 />
               </div>

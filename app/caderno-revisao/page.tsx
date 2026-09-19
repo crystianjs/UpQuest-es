@@ -4,17 +4,33 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '../components/Navbar';
 import { supabase } from '@/lib/supabase';
-import { BookMarked, Plus, Pin, CheckCircle2, Clock, AlertCircle, Edit3, Trash2, Code, X, Save } from 'lucide-react';
+import { BookMarked, Plus, Pin, CheckCircle2, Clock, AlertCircle, Edit3, Trash2, Code, X, Save, Copy, Check } from 'lucide-react';
 
 interface PostIt {
   id: string;
   materia: string;
-  categoria: 'Linguagens' | 'Direito' | 'TJSP' | 'Exatas' | 'Tecnologia' | 'Geral';
+  categoria: string;
   titulo: string;
   conteudo: string;
   status: 'Pendente' | 'Revisando' | 'Dominada';
   cor: 'amarelo' | 'azul' | 'verde' | 'rosa' | 'laranja';
 }
+
+const MATERIAS_TJSP = [
+  'TODAS AS MATÉRIAS',
+  'Língua Portuguesa',
+  'Direito Penal',
+  'Direito Processual Penal',
+  'Direito Processual Civil',
+  'Direito Constitucional',
+  'Direito Administrativo',
+  'Normas da Corregedoria',
+  'Matemática',
+  'Raciocínio Lógico',
+  'Informática',
+  'Atualidades',
+  'Estatuto da Pessoa com Deficiência'
+];
 
 export default function CadernoRevisaoPage() {
   const router = useRouter();
@@ -24,6 +40,7 @@ export default function CadernoRevisaoPage() {
   // Estados dos Modais
   const [modalJsonOpen, setModalJsonOpen] = useState(false);
   const [jsonInput, setJsonInput] = useState('');
+  const [copiado, setCopiado] = useState(false);
   
   const [postitEmEdicao, setPostitEmEdicao] = useState<PostIt | null>(null);
 
@@ -41,7 +58,7 @@ export default function CadernoRevisaoPage() {
 
   const postitsFiltrados = filtroCategoria === 'TODAS AS MATÉRIAS'
     ? postits
-    : postits.filter(p => p.categoria.toUpperCase() === filtroCategoria.toUpperCase());
+    : postits.filter(p => p.materia.toLowerCase() === filtroCategoria.toLowerCase() || p.categoria.toLowerCase() === filtroCategoria.toLowerCase());
 
   // Adicionar via JSON
   const handleAdicionarJson = () => {
@@ -49,9 +66,9 @@ export default function CadernoRevisaoPage() {
       const parsed = JSON.parse(jsonInput);
       const novoItem: PostIt = {
         id: Date.now().toString(),
-        materia: parsed.materia || 'Nova Matéria',
-        categoria: parsed.categoria || 'Geral',
-        titulo: parsed.titulo || parsed.materia || 'Resumo IA',
+        materia: parsed.materia || 'Direito Constitucional',
+        categoria: parsed.categoria || parsed.materia || 'TJSP',
+        titulo: parsed.titulo || 'Resumo de Erros',
         conteudo: parsed.conteudo || parsed.resumo || 'Sem conteúdo especificado.',
         status: parsed.status || 'Pendente',
         cor: parsed.cor || 'amarelo'
@@ -61,7 +78,7 @@ export default function CadernoRevisaoPage() {
       setModalJsonOpen(false);
       alert('Resumo adicionado com sucesso ao quadro!');
     } catch {
-      alert('Erro no formato JSON. Certifique-se de inserir um JSON válido.');
+      alert('Erro no formato JSON. Certifique-se de inserir um JSON válido gerado pela IA.');
     }
   };
 
@@ -79,6 +96,23 @@ export default function CadernoRevisaoPage() {
     if (confirm('Tem certeza que deseja remover este post-it do caderno?')) {
       setPostits(postits.filter(p => p.id !== id));
     }
+  };
+
+  const promptIaRecomendado = `Com base nos meus erros nas questões de [INSERIR MATÉRIA AQUI], crie um resumo objetivo em formato estrito de objeto JSON puro (sem blocos markdown de texto ao redor se possível, apenas chaves), contendo exatamente estas chaves:
+{
+  "materia": "Nome exato da matéria do TJSP",
+  "categoria": "TJSP",
+  "titulo": "Título curto focado no ponto de erro",
+  "conteudo": "Explicação direta do conceito cobrado, pegadinha da banca VUNESP e o motivo do erro",
+  "status": "Pendente",
+  "cor": "amarelo"
+}
+O campo cor pode ser: "amarelo", "azul", "verde", "rosa" ou "laranja". Traga apenas o JSON.`;
+
+  const copiarPrompt = () => {
+    navigator.clipboard.writeText(promptIaRecomendado);
+    setCopiado(true);
+    setTimeout(() => setCopiado(false), 2000);
   };
 
   const getCorPostIt = (cor: string) => {
@@ -125,7 +159,7 @@ export default function CadernoRevisaoPage() {
                 </span>
               </div>
               <p className="text-xs text-zinc-400 mt-1">
-                Post-its Inteligentes & Pontos de Melhoria da IA
+                Post-its Inteligentes de Erros & Revisão Direcionada VUNESP
               </p>
             </div>
           </div>
@@ -141,14 +175,14 @@ export default function CadernoRevisaoPage() {
           </div>
         </div>
 
-        {/* Filtros e Indicador */}
+        {/* Filtros e Indicador com Scroll Horizontal nativo */}
         <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-4 flex flex-col lg:flex-row justify-between items-center gap-4">
-          <div className="flex flex-wrap items-center gap-2">
-            {['TODAS AS MATÉRIAS', 'Linguagens', 'Direito', 'TJSP', 'Exatas', 'Tecnologia', 'Geral'].map((cat) => (
+          <div className="flex items-center gap-2 overflow-x-auto w-full pb-2 lg:pb-0 scrollbar-thin">
+            {MATERIAS_TJSP.map((cat) => (
               <button
                 key={cat}
                 onClick={() => setFiltroCategoria(cat)}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
                   filtroCategoria === cat
                     ? 'bg-red-600 text-white shadow-lg shadow-red-600/20'
                     : 'bg-zinc-900 text-zinc-400 hover:text-white hover:bg-zinc-800 border border-zinc-800'
@@ -159,7 +193,7 @@ export default function CadernoRevisaoPage() {
             ))}
           </div>
 
-          <div className="bg-zinc-900 border border-zinc-800 px-4 py-2 rounded-xl text-xs font-semibold text-zinc-300 flex items-center gap-2 shrink-0">
+          <div className="bg-zinc-900 border border-zinc-800 px-4 py-2 rounded-xl text-xs font-semibold text-zinc-300 flex items-center gap-2 shrink-0 w-full lg:w-auto justify-center">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
             Matérias Dominadas: <strong className="text-white">{dominadasCount} / {postits.length}</strong>
           </div>
@@ -174,7 +208,7 @@ export default function CadernoRevisaoPage() {
             <div className="space-y-1">
               <h3 className="text-sm font-bold text-white">Nenhum resumo no caderno ainda</h3>
               <p className="text-xs text-zinc-500 max-w-sm mx-auto">
-                Clique no botão "Adicionar Resumo (JSON)" acima para colar os dados gerados pela IA e começar a testar.
+                Clique em "Adicionar Resumo (JSON)" acima para copiar o prompt recomendado, pedir para a IA e colar o JSON gerado.
               </p>
             </div>
           </div>
@@ -185,19 +219,19 @@ export default function CadernoRevisaoPage() {
                 key={item.id}
                 className={`rounded-2xl p-5 border shadow-xl flex flex-col justify-between transition-transform duration-200 hover:-translate-y-1 relative group ${getCorPostIt(item.cor)}`}
               >
-                {/* Botões de Ação rápida no topo do card (Editar e Apagar) */}
-                <div className="absolute top-3 right-3 flex items-center gap-1.5 opacity-80 group-hover:opacity-100 transition-opacity">
+                {/* Botões de Ação rápida */}
+                <div className="absolute top-3 right-3 flex items-center gap-1.5 opacity-80 group-hover:opacity-100 transition-opacity bg-black/10 p-1 rounded-lg backdrop-blur-xs">
                   <button 
                     onClick={() => setPostitEmEdicao(item)}
-                    title="Editar Post-it / Status"
-                    className="p-1.5 rounded-lg bg-black/10 hover:bg-black/25 text-zinc-900 transition-colors cursor-pointer"
+                    title="Editar Post-it"
+                    className="p-1 rounded hover:bg-black/20 text-zinc-900 transition-colors cursor-pointer"
                   >
                     <Edit3 className="w-3.5 h-3.5" />
                   </button>
                   <button 
                     onClick={() => handleRemover(item.id)}
                     title="Remover Resumo"
-                    className="p-1.5 rounded-lg bg-black/10 hover:bg-rose-500 hover:text-white text-zinc-900 transition-colors cursor-pointer"
+                    className="p-1 rounded hover:bg-rose-600 hover:text-white text-zinc-900 transition-colors cursor-pointer"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
@@ -215,16 +249,19 @@ export default function CadernoRevisaoPage() {
                     {item.titulo}
                   </h3>
 
-                  <p className="text-xs leading-relaxed opacity-90 line-clamp-5">
-                    {item.conteudo}
-                  </p>
+                  {/* Scroll interno aplicado para textos longos */}
+                  <div className="max-h-[220px] overflow-y-auto pr-1 scrollbar-thin">
+                    <p className="text-xs leading-relaxed opacity-90 whitespace-pre-wrap">
+                      {item.conteudo}
+                    </p>
+                  </div>
                 </div>
 
                 <div className="pt-4 mt-4 border-t border-black/10 flex justify-between items-center text-xs font-bold">
                   <span className="flex items-center gap-1 opacity-70 text-[11px]">
                     <Pin className="w-3 h-3 rotate-45" /> Post-it IA
                   </span>
-                  <span className="flex items-center gap-1 opacity-90 text-[11px]">
+                  <span className="flex items-center gap-1 opacity-90 text-[11px] truncate max-w-[140px]" title={item.materia}>
                     {item.materia}
                   </span>
                 </div>
@@ -235,14 +272,14 @@ export default function CadernoRevisaoPage() {
 
       </main>
 
-      {/* MODAL: Adicionar Resumo via JSON */}
+      {/* MODAL: Adicionar Resumo via JSON + Prompt Embutido */}
       {modalJsonOpen && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-zinc-950 border border-zinc-800 rounded-2xl w-full max-w-lg p-6 space-y-6 shadow-2xl">
+          <div className="bg-zinc-950 border border-zinc-800 rounded-2xl w-full max-w-xl p-6 space-y-6 shadow-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center">
               <h3 className="text-base font-bold text-white flex items-center gap-2">
                 <Code className="w-5 h-5 text-red-500" />
-                Adicionar Novo Resumo (JSON)
+                Adicionar Resumo de Erros (JSON)
               </h3>
               <button 
                 onClick={() => setModalJsonOpen(false)}
@@ -252,19 +289,39 @@ export default function CadernoRevisaoPage() {
               </button>
             </div>
 
-            <p className="text-xs text-zinc-400">
-              Cole abaixo o objeto JSON gerado pela IA com os campos: <code className="text-red-400">materia</code>, <code className="text-red-400">categoria</code>, <code className="text-red-400">titulo</code>, <code className="text-red-400">conteudo</code>, <code className="text-red-400">status</code> (Pendente, Revisando, Dominada) e <code className="text-red-400">cor</code> (amarelo, rosa, verde, azul, laranja).
-            </p>
+            {/* Caixa do Prompt Recomendado */}
+            <div className="bg-zinc-900/90 border border-zinc-800 rounded-xl p-4 space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-[11px] font-bold text-red-400 uppercase tracking-wider">
+                  1. Copie este prompt e envie para a IA:
+                </span>
+                <button
+                  onClick={copiarPrompt}
+                  className="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs px-2.5 py-1 rounded-lg flex items-center gap-1.5 transition-all cursor-pointer font-semibold"
+                >
+                  {copiado ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                  {copiado ? 'Copiado!' : 'Copiar Prompt'}
+                </button>
+              </div>
+              <pre className="text-[11px] font-mono text-zinc-300 bg-black/40 p-3 rounded-lg overflow-x-auto whitespace-pre-wrap">
+                {promptIaRecomendado}
+              </pre>
+            </div>
 
-            <textarea 
-              rows={8}
-              value={jsonInput}
-              onChange={(e) => setJsonInput(e.target.value)}
-              placeholder={`{\n  "materia": "Direito Constitucional",\n  "categoria": "Direito",\n  "titulo": "Controle de Constitucionalidade",\n  "conteudo": "Resumo detalhado gerado pela IA...",\n  "status": "Revisando",\n  "cor": "verde"\n}`}
-              className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs font-mono text-zinc-100 focus:outline-none focus:border-red-600 transition-colors"
-            />
+            <div className="space-y-2">
+              <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
+                2. Cole o JSON retornado pela IA abaixo:
+              </span>
+              <textarea 
+                rows={6}
+                value={jsonInput}
+                onChange={(e) => setJsonInput(e.target.value)}
+                placeholder={`{\n  "materia": "Direito Constitucional",\n  "categoria": "TJSP",\n  "titulo": "Direitos e Garantias Fundamentais",\n  "conteudo": "Erro comum em mandado de segurança...",\n  "status": "Revisando",\n  "cor": "verde"\n}`}
+                className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs font-mono text-zinc-100 focus:outline-none focus:border-red-600 transition-colors"
+              />
+            </div>
 
-            <div className="flex justify-end gap-3">
+            <div className="flex justify-end gap-3 pt-2 border-t border-zinc-900">
               <button 
                 onClick={() => setModalJsonOpen(false)}
                 className="px-4 py-2 rounded-xl bg-zinc-900 text-zinc-300 hover:bg-zinc-800 text-xs font-semibold cursor-pointer transition-all"
@@ -282,7 +339,7 @@ export default function CadernoRevisaoPage() {
         </div>
       )}
 
-      {/* MODAL: Lápis de Edição (Alterar status, conteúdo e cor) */}
+      {/* MODAL: Edição de Post-it */}
       {postitEmEdicao && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-zinc-950 border border-zinc-800 rounded-2xl w-full max-w-lg p-6 space-y-6 shadow-2xl">
@@ -342,7 +399,7 @@ export default function CadernoRevisaoPage() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-zinc-400 font-semibold">Conteúdo / Macete da IA</label>
+                <label className="text-zinc-400 font-semibold">Conteúdo / Macete</label>
                 <textarea 
                   rows={5}
                   value={postitEmEdicao.conteudo}

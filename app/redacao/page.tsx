@@ -1,23 +1,38 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Navbar from '../components/Navbar';
 import { supabase } from '@/lib/supabase';
-import { getUsuarioAtivo } from '@/lib/auth';
 import { PenTool, CheckCircle, AlertCircle } from 'lucide-react';
 
 export default function RedacaoPage() {
+  const router = useRouter();
   const [tema, setTema] = useState('');
   const [texto, setTexto] = useState('');
   const [salvando, setSalvando] = useState(false);
   const [sucesso, setSucesso] = useState(false);
   const [erro, setErro] = useState('');
+  const [userId, setUserId] = useState<string | null>(null);
 
-  const usuarioAtual = getUsuarioAtivo();
+  useEffect(() => {
+    async function verificarSessao() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        router.push('/');
+      } else {
+        setUserId(session.user.id);
+      }
+    }
+    verificarSessao();
+  }, [router]);
+
   const palavrasCount = texto.trim() ? texto.trim().split(/\s+/).length : 0;
 
   async function handleSalvarRedacao(e: React.FormEvent) {
     e.preventDefault();
+    if (!userId) return;
+
     if (!tema.trim() || !texto.trim()) {
       setErro('Por favor, preencha o tema e o texto da redação.');
       return;
@@ -33,7 +48,7 @@ export default function RedacaoPage() {
           tema: tema,
           texto: texto,
           tempo_gasto_segundos: 0,
-          user_email: usuarioAtual
+          user_id: userId // Vincula rigorosamente ao UUID do utilizador autenticado
         }
       ]);
 
@@ -56,16 +71,14 @@ export default function RedacaoPage() {
 
       <main className="max-w-4xl mx-auto px-6 py-8 space-y-8">
         
-        <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-              <PenTool className="w-6 h-6 text-red-500" />
-              Treino de Redação Padrão VUNESP — UPQUESTOS
-            </h1>
-            <p className="text-sm text-zinc-400 mt-1">
-              A gravar para a conta: <span className="text-red-400 font-semibold">{usuarioAtual}</span>
-            </p>
-          </div>
+        <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 shadow-xl">
+          <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+            <PenTool className="w-6 h-6 text-red-500" />
+            Treino de Redação Padrão VUNESP — UPQUESTOS
+          </h1>
+          <p className="text-sm text-zinc-400 mt-1">
+            Treine e guarde as suas redações de forma totalmente isolada.
+          </p>
         </div>
 
         {sucesso && (

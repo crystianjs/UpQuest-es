@@ -1,23 +1,28 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { getUsuarioAtivo, setUsuarioAtivo } from '@/lib/auth';
-import { User, ShieldAlert } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabase';
+import { ShieldAlert, LogOut } from 'lucide-react';
 
 export default function Navbar() {
   const pathname = usePathname();
-  const usuarioAtual = getUsuarioAtivo();
+  const router = useRouter();
 
   const isActive = (path: string) => pathname === path;
+
+  async function handleLogout() {
+    await supabase.auth.signOut();
+    router.push('/');
+  }
 
   return (
     <nav className="bg-zinc-950 border-b border-zinc-800 px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
       
-      {/* Logotipo / Título */}
+      {/* Logotipo */}
       <div className="flex items-center gap-6">
-        <Link href="/desempenho" className="font-black text-red-600 tracking-wider text-lg flex items-center gap-2">
-          UPQUESTO<span className="text-white">ES</span>
+        <Link href="/desempenho" className="font-black text-red-600 tracking-wider text-lg flex items-center">
+          UPQUEST<span className="text-white">OS</span>
         </Link>
         <div className="hidden lg:flex items-center gap-2 bg-red-950/30 border border-red-600/30 px-3 py-1 rounded-lg text-xs font-semibold text-red-400">
           <ShieldAlert className="w-3.5 h-3.5" />
@@ -47,18 +52,14 @@ export default function Navbar() {
         </Link>
       </div>
 
-      {/* Seletor Rápido de Utilizador (Para testes de isolamento) */}
-      <div className="flex items-center gap-2 bg-zinc-900 border border-zinc-800 px-3 py-1.5 rounded-xl shadow-inner">
-        <User className="w-4 h-4 text-red-500 shrink-0" />
-        <select
-          value={usuarioAtual}
-          onChange={(e) => setUsuarioAtivo(e.target.value)}
-          className="bg-transparent text-xs text-zinc-200 focus:outline-none cursor-pointer font-medium"
-        >
-          <option value="crystianjs09@gmail.com" className="bg-zinc-900 text-white">Crystian (Principal)</option>
-          <option value="teste@gmail.com.br" className="bg-zinc-900 text-white">Teste (teste@gmail.com.br)</option>
-        </select>
-      </div>
+      {/* Botão de Sair */}
+      <button
+        onClick={handleLogout}
+        className="flex items-center gap-2 bg-zinc-900 hover:bg-red-950/40 border border-zinc-800 hover:border-red-600/40 px-4 py-2 rounded-xl text-xs font-semibold text-zinc-300 hover:text-red-400 transition-all cursor-pointer"
+      >
+        <LogOut className="w-4 h-4" />
+        Sair da Conta
+      </button>
 
     </nav>
   );

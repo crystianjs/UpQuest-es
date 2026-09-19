@@ -4,12 +4,12 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
-import { setUsuarioAtivo } from '@/lib/auth';
+import { ShieldAlert } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState('crystianjs09@gmail.com');
-  const [senha, setSenha] = useState('********');
+  const [email, setEmail] = useState('');
+  const [senha, setSenha] = useState('');
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState('');
 
@@ -19,26 +19,19 @@ export default function LoginPage() {
     setErro('');
 
     try {
-      // Guarda o e-mail ativo no localStorage para isolar os dados nas páginas seguintes
-      if (email.trim()) {
-        setUsuarioAtivo(email.trim());
-      }
-
-      // Tentativa de autenticação real via Supabase se configurado, ou redirecionamento direto
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password: senha,
       });
 
-      if (error) {
-        // Se houver erro no banco mas quisermos simular acesso fluido, prosseguimos para o painel
-        console.warn('Aviso de auth do Supabase, prosseguindo para o painel:', error.message);
-      }
+      if (error) throw error;
 
-      router.push('/desempenho');
+      if (data.session) {
+        router.push('/desempenho');
+      }
     } catch (err: any) {
-      setErro('Erro ao conectar com o banco de dados.');
-      router.push('/desempenho'); // Garante que nunca trave o utilizador
+      console.error('Erro no login:', err);
+      setErro(err.message || 'Erro ao autenticar. Verifique o seu e-mail e palavra-passe.');
     } finally {
       setLoading(false);
     }
@@ -52,9 +45,7 @@ export default function LoginPage() {
 
         <div className="flex justify-center mb-6">
           <div className="w-14 h-14 rounded-xl bg-red-950/40 border border-red-600/50 flex items-center justify-center text-red-500 shadow-lg shadow-red-950/50">
-            <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
-            </svg>
+            <ShieldAlert className="w-7 h-7" />
           </div>
         </div>
 
@@ -76,26 +67,28 @@ export default function LoginPage() {
         <form onSubmit={handleLogin} className="space-y-5">
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-2">
-              E-mail Cadastrado
+              E-mail
             </label>
             <input 
               type="email" 
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              placeholder="exemplo@gmail.com"
               className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-3 text-sm text-zinc-200 focus:outline-none focus:border-red-600 transition-colors"
             />
           </div>
 
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-2">
-              Senha
+              Palavra-passe
             </label>
             <input 
               type="password" 
               required
               value={senha}
               onChange={(e) => setSenha(e.target.value)}
+              placeholder="••••••••"
               className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-3 text-sm text-zinc-200 focus:outline-none focus:border-red-600 transition-colors"
             />
           </div>

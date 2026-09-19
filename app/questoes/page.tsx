@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Navbar from '../components/Navbar';
 import { supabase } from '@/lib/supabase';
-import { getUsuarioAtivo } from '@/lib/auth';
 import { CheckCircle, AlertCircle, BookOpen } from 'lucide-react';
 
 const MATERIAS_TJSP = [
@@ -22,6 +22,7 @@ const MATERIAS_TJSP = [
 ];
 
 export default function QuestoesPage() {
+  const router = useRouter();
   const [materia, setMateria] = useState(MATERIAS_TJSP[0]);
   const [totalFeitas, setTotalFeitas] = useState('');
   const [acertos, setAcertos] = useState('');
@@ -29,11 +30,24 @@ export default function QuestoesPage() {
   const [salvando, setSalvando] = useState(false);
   const [sucesso, setSucesso] = useState(false);
   const [erro, setErro] = useState('');
+  const [userId, setUserId] = useState<string | null>(null);
 
-  const usuarioAtual = getUsuarioAtivo();
+  useEffect(() => {
+    async function verificarSessao() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        router.push('/');
+      } else {
+        setUserId(session.user.id);
+      }
+    }
+    verificarSessao();
+  }, [router]);
 
   async function handleSalvarQuestoes(e: React.FormEvent) {
     e.preventDefault();
+    if (!userId) return;
+
     const feitasNum = parseInt(totalFeitas) || 0;
     const acertosNum = parseInt(acertos) || 0;
     const errosNum = parseInt(erros) || 0;
@@ -59,7 +73,7 @@ export default function QuestoesPage() {
           total_feitas: feitasNum,
           acertos: acertosNum,
           erros: errosNum,
-          user_email: usuarioAtual
+          user_id: userId // Vincula rigorosamente ao UUID do utilizador autenticado
         }
       ]);
 
@@ -89,7 +103,7 @@ export default function QuestoesPage() {
             Registo de Questões — UPQUESTOS
           </h1>
           <p className="text-sm text-zinc-400 mt-1">
-            Registar progresso para a conta: <span className="text-red-400 font-semibold">{usuarioAtual}</span>
+            Registe o seu progresso individual isolado por conta.
           </p>
         </div>
 

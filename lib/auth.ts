@@ -1,12 +1,14 @@
 // lib/auth.ts
-export function getUsuarioAtivo(): string {
-  if (typeof window === 'undefined') return 'crystianjs09@gmail.com';
-  return localStorage.getItem('upquest_usuario') || 'crystianjs09@gmail.com';
+import { supabase } from './supabase';
+
+export async function getUtilizadorAtual() {
+  const { data: { session } } = await supabase.auth.getSession();
+  return session?.user || null;
 }
 
-export function setUsuarioAtivo(email: string) {
+export async function fazerLogout() {
+  await supabase.auth.signOut();
   if (typeof window !== 'undefined') {
-    localStorage.setItem('upquest_usuario', email);
-    window.location.reload(); // Recarrega para atualizar os dados do painel
+    window.location.href = '/';
   }
 }

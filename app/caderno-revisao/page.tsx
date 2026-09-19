@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '../components/Navbar';
 import { supabase } from '@/lib/supabase';
-import { BookMarked, Sparkles, Pin, ExternalLink, CheckCircle2, Clock, AlertCircle } from 'lucide-react';
+import { BookMarked, Plus, Pin, CheckCircle2, Clock, AlertCircle, Edit3, Trash2, Code, X, Save } from 'lucide-react';
 
 interface PostIt {
   id: string;
@@ -16,123 +16,16 @@ interface PostIt {
   cor: 'amarelo' | 'azul' | 'verde' | 'rosa' | 'laranja';
 }
 
-// Dados iniciais baseados nas matérias oficiais do TJSP (VUNESP)
-const POSTITS_INICIAIS: PostIt[] = [
-  {
-    id: '1',
-    materia: 'Língua Portuguesa',
-    categoria: 'Linguagens',
-    titulo: 'Língua Portuguesa',
-    conteudo: 'Crase obrigatória antes de pronomes relativos "cuja" (nunca). Concordância com o verbo "haver" no sentido de existir (invariável no singular). Macete da IA: ...',
-    status: 'Revisando',
-    cor: 'amarelo'
-  },
-  {
-    id: '2',
-    materia: 'Direito Administrativo',
-    categoria: 'Direito',
-    titulo: 'Direito Administrativo',
-    conteudo: 'Atos Administrativos: Requisitos (CO-FOR-MO-OB-FI). Licitações (Lei 14.133/21): Dispensa e Inexigibilidade de licitação. Macete da IA: Lembre-se que o silêncio da...',
-    status: 'Pendente',
-    cor: 'rosa'
-  },
-  {
-    id: '3',
-    materia: 'Direito Constitucional',
-    categoria: 'Direito',
-    titulo: 'Direito Constitucional',
-    conteudo: 'Art. 5º da CF/88: Direitos e Garantias Fundamentais. Habeas Corpus (liberdade de locomoção) x Habeas Data (informações pessoais). Macete da IA: Ação popular é...',
-    status: 'Dominada',
-    cor: 'verde'
-  },
-  {
-    id: '4',
-    materia: 'Direito Penal',
-    categoria: 'Direito',
-    titulo: 'Direito Penal',
-    conteudo: 'Crimes contra a Administração Pública (Art. 312 a 359). Peculato culposo extingue a punibilidade se reparar o dano antes da sentença irrecorrível. Macete da IA: ...',
-    status: 'Pendente',
-    cor: 'azul'
-  },
-  {
-    id: '5',
-    materia: 'Direito Processual Civil',
-    categoria: 'Direito',
-    titulo: 'Direito Processual Civil',
-    conteudo: 'Atos processuais, prazos em dias úteis. Petição inicial e tutela provisória. Macete da IA: Recurso de Apelação tem prazo fatal de 15 dias úteis.',
-    status: 'Pendente',
-    cor: 'laranja'
-  },
-  {
-    id: '6',
-    materia: 'Direito Processual Penal',
-    categoria: 'Direito',
-    titulo: 'Direito Processual Penal',
-    conteudo: 'Inquérito Policial: procedimento inquisitivo, escrito e dispensável. Prisões cautelares: Temporária (5+5 dias hediondos) e Preventiva (sem prazo fixo). Macete da IA: ...',
-    status: 'Revisando',
-    cor: 'amarelo'
-  },
-  {
-    id: '7',
-    materia: 'Normas da Corregedoria',
-    categoria: 'TJSP',
-    titulo: 'Normas da Corregedoria',
-    conteudo: 'Essencial para o TJSP! Rotinas de cartório judicial e digital. Carga de autos, prazos para cartório e atos do escrivão/chefe de seção. Macete da IA: Decore os prazos d...',
-    status: 'Pendente',
-    cor: 'rosa'
-  },
-  {
-    id: '8',
-    materia: 'Matemática',
-    categoria: 'Exatas',
-    titulo: 'Matemática',
-    conteudo: 'Regra de três simples e composta, porcentagem e juros simples. Média aritmética ponderada e razão/proporção. Macete da IA: Em aumentos sucessivos de...',
-    status: 'Pendente',
-    cor: 'azul'
-  },
-  {
-    id: '9',
-    materia: 'Raciocínio Lógico',
-    categoria: 'Exatas',
-    titulo: 'Raciocínio Lógico',
-    conteudo: 'Tabelas verdade, equivalências lógicas, negação de proposições (De Morgan) e diagramas lógicos. Macete da IA: Para negar o "E", nega tudo e troca por "OU".',
-    status: 'Revisando',
-    cor: 'amarelo'
-  },
-  {
-    id: '10',
-    materia: 'Informática',
-    categoria: 'Tecnologia',
-    titulo: 'Informática',
-    conteudo: 'Windows 10/11, Pacote Office/LibreOffice, atalhos de teclado, segurança da informação (phishing, malware, criptografia) e redes/internet.',
-    status: 'Dominada',
-    cor: 'verde'
-  },
-  {
-    id: '11',
-    materia: 'Atualidades',
-    categoria: 'Geral',
-    titulo: 'Atualidades',
-    conteudo: 'Fatos políticos, econômicos e sociais do Brasil e do mundo divulgados nos últimos meses, focando em cidadania e grandes temas contemporâneos.',
-    status: 'Pendente',
-    cor: 'rosa'
-  },
-  {
-    id: '12',
-    materia: 'Pessoa com Deficiência (LBI)',
-    categoria: 'Direito',
-    titulo: 'Pessoa com Deficiência (LBI)',
-    conteudo: 'Lei Brasileira de Inclusão da Pessoa com Deficiência (Estatuto da Pessoa com Deficiência - Lei nº 13.146/2015). Conceitos e diretrizes fundamentais.',
-    status: 'Pendente',
-    cor: 'amarelo'
-  }
-];
-
 export default function CadernoRevisaoPage() {
   const router = useRouter();
   const [filtroCategoria, setFiltroCategoria] = useState<string>('TODAS AS MATÉRIAS');
-  const [postits, setPostits] = useState<PostIt[]>(POSTITS_INICIAIS);
-  const [loadingIA, setLoadingIA] = useState(false);
+  const [postits, setPostits] = useState<PostIt[]>([]);
+
+  // Estados dos Modais
+  const [modalJsonOpen, setModalJsonOpen] = useState(false);
+  const [jsonInput, setJsonInput] = useState('');
+  
+  const [postitEmEdicao, setPostitEmEdicao] = useState<PostIt | null>(null);
 
   useEffect(() => {
     async function verificarSessao() {
@@ -144,38 +37,58 @@ export default function CadernoRevisaoPage() {
     verificarSessao();
   }, [router]);
 
-  // Contagem de matérias dominadas
   const dominadasCount = postits.filter(p => p.status === 'Dominada').length;
 
-  // Filtragem de post-its
   const postitsFiltrados = filtroCategoria === 'TODAS AS MATÉRIAS'
     ? postits
     : postits.filter(p => p.categoria.toUpperCase() === filtroCategoria.toUpperCase());
 
-  // Simular ingestão de resumo por IA
-  const handleIngerirResumoIA = () => {
-    setLoadingIA(true);
-    setTimeout(() => {
-      setLoadingIA(false);
-      alert('Resumos e pontos de melhoria otimizados com sucesso pela IA para o padrão VUNESP!');
-    }, 1200);
+  // Adicionar via JSON
+  const handleAdicionarJson = () => {
+    try {
+      const parsed = JSON.parse(jsonInput);
+      const novoItem: PostIt = {
+        id: Date.now().toString(),
+        materia: parsed.materia || 'Nova Matéria',
+        categoria: parsed.categoria || 'Geral',
+        titulo: parsed.titulo || parsed.materia || 'Resumo IA',
+        conteudo: parsed.conteudo || parsed.resumo || 'Sem conteúdo especificado.',
+        status: parsed.status || 'Pendente',
+        cor: parsed.cor || 'amarelo'
+      };
+      setPostits([novoItem, ...postits]);
+      setJsonInput('');
+      setModalJsonOpen(false);
+      alert('Resumo adicionado com sucesso ao quadro!');
+    } catch {
+      alert('Erro no formato JSON. Certifique-se de inserir um JSON válido.');
+    }
   };
 
-  // Mapeamento de cores dos post-its estilo UI da imagem
+  // Salvar alterações de edição
+  const handleSalvarEdicao = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!postitEmEdicao) return;
+
+    setPostits(postits.map(p => p.id === postitEmEdicao.id ? postitEmEdicao : p));
+    setPostitEmEdicao(null);
+  };
+
+  // Remover Post-it
+  const handleRemover = (id: string) => {
+    if (confirm('Tem certeza que deseja remover este post-it do caderno?')) {
+      setPostits(postits.filter(p => p.id !== id));
+    }
+  };
+
   const getCorPostIt = (cor: string) => {
     switch (cor) {
-      case 'amarelo':
-        return 'bg-amber-100 text-zinc-900 border-amber-300';
-      case 'rosa':
-        return 'bg-rose-100 text-zinc-900 border-rose-300';
-      case 'verde':
-        return 'bg-emerald-100 text-zinc-900 border-emerald-300';
-      case 'azul':
-        return 'bg-sky-100 text-zinc-900 border-sky-300';
-      case 'laranja':
-        return 'bg-orange-100 text-zinc-900 border-orange-300';
-      default:
-        return 'bg-amber-100 text-zinc-900 border-amber-300';
+      case 'amarelo': return 'bg-amber-100 text-zinc-900 border-amber-300';
+      case 'rosa': return 'bg-rose-100 text-zinc-900 border-rose-300';
+      case 'verde': return 'bg-emerald-100 text-zinc-900 border-emerald-300';
+      case 'azul': return 'bg-sky-100 text-zinc-900 border-sky-300';
+      case 'laranja': return 'bg-orange-100 text-zinc-900 border-orange-300';
+      default: return 'bg-amber-100 text-zinc-900 border-amber-300';
     }
   };
 
@@ -196,7 +109,7 @@ export default function CadernoRevisaoPage() {
 
       <main className="max-w-7xl mx-auto px-6 py-8 space-y-8">
         
-        {/* Cabeçalho Principal da Ferramenta */}
+        {/* Cabeçalho */}
         <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl bg-red-950/60 border border-red-600/50 flex items-center justify-center text-red-500 shadow-lg shadow-red-950/50 shrink-0">
@@ -217,17 +130,18 @@ export default function CadernoRevisaoPage() {
             </div>
           </div>
 
-          <button 
-            onClick={handleIngerirResumoIA}
-            disabled={loadingIA}
-            className="bg-red-600 hover:bg-red-700 text-white font-bold text-xs py-2.5 px-4 rounded-xl shadow-lg shadow-red-600/20 flex items-center gap-2 transition-all cursor-pointer disabled:opacity-50"
-          >
-            <Sparkles className="w-4 h-4" />
-            {loadingIA ? 'A processar IA...' : 'Ingerir Resumo IA'}
-          </button>
+          <div className="flex items-center gap-3 w-full md:w-auto">
+            <button 
+              onClick={() => setModalJsonOpen(true)}
+              className="bg-red-600 hover:bg-red-700 text-white font-bold text-xs py-2.5 px-4 rounded-xl shadow-lg shadow-red-600/20 flex items-center gap-2 transition-all cursor-pointer w-full md:w-auto justify-center"
+            >
+              <Code className="w-4 h-4" />
+              Adicionar Resumo (JSON)
+            </button>
+          </div>
         </div>
 
-        {/* Barra de Filtros de Matérias e Indicador */}
+        {/* Filtros e Indicador */}
         <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-4 flex flex-col lg:flex-row justify-between items-center gap-4">
           <div className="flex flex-wrap items-center gap-2">
             {['TODAS AS MATÉRIAS', 'Linguagens', 'Direito', 'TJSP', 'Exatas', 'Tecnologia', 'Geral'].map((cat) => (
@@ -251,43 +165,213 @@ export default function CadernoRevisaoPage() {
           </div>
         </div>
 
-        {/* Grelha de Post-its Estilo Quadro */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {postitsFiltrados.map((item) => (
-            <div 
-              key={item.id}
-              className={`rounded-2xl p-5 border shadow-xl flex flex-col justify-between transition-transform duration-200 hover:-translate-y-1 ${getCorPostIt(item.cor)}`}
-            >
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-[10px] uppercase font-black tracking-widest opacity-70">
-                    {item.categoria}
-                  </span>
-                  {getStatusBadge(item.status)}
+        {/* Grelha de Post-its */}
+        {postits.length === 0 ? (
+          <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-16 text-center space-y-4">
+            <div className="w-12 h-12 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center mx-auto text-zinc-500">
+              <Code className="w-6 h-6" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-sm font-bold text-white">Nenhum resumo no caderno ainda</h3>
+              <p className="text-xs text-zinc-500 max-w-sm mx-auto">
+                Clique no botão "Adicionar Resumo (JSON)" acima para colar os dados gerados pela IA e começar a testar.
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {postitsFiltrados.map((item) => (
+              <div 
+                key={item.id}
+                className={`rounded-2xl p-5 border shadow-xl flex flex-col justify-between transition-transform duration-200 hover:-translate-y-1 relative group ${getCorPostIt(item.cor)}`}
+              >
+                {/* Botões de Ação rápida no topo do card (Editar e Apagar) */}
+                <div className="absolute top-3 right-3 flex items-center gap-1.5 opacity-80 group-hover:opacity-100 transition-opacity">
+                  <button 
+                    onClick={() => setPostitEmEdicao(item)}
+                    title="Editar Post-it / Status"
+                    className="p-1.5 rounded-lg bg-black/10 hover:bg-black/25 text-zinc-900 transition-colors cursor-pointer"
+                  >
+                    <Edit3 className="w-3.5 h-3.5" />
+                  </button>
+                  <button 
+                    onClick={() => handleRemover(item.id)}
+                    title="Remover Resumo"
+                    className="p-1.5 rounded-lg bg-black/10 hover:bg-rose-500 hover:text-white text-zinc-900 transition-colors cursor-pointer"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
                 </div>
 
-                <h3 className="text-base font-black tracking-tight">
-                  {item.titulo}
-                </h3>
+                <div className="space-y-3 pr-12">
+                  <div className="flex justify-between items-center">
+                    <span className="text-[10px] uppercase font-black tracking-widest opacity-70">
+                      {item.categoria}
+                    </span>
+                    {getStatusBadge(item.status)}
+                  </div>
 
-                <p className="text-xs leading-relaxed opacity-90 line-clamp-5">
-                  {item.conteudo}
-                </p>
-              </div>
+                  <h3 className="text-base font-black tracking-tight">
+                    {item.titulo}
+                  </h3>
 
-              <div className="pt-4 mt-4 border-t border-black/10 flex justify-between items-center text-xs font-bold">
-                <span className="flex items-center gap-1 opacity-70 text-[11px]">
-                  <Pin className="w-3 h-3 rotate-45" /> Post-it IA
-                </span>
-                <button className="flex items-center gap-1 hover:underline opacity-90 hover:opacity-100 cursor-pointer">
-                  Abrir Resumo <ExternalLink className="w-3 h-3" />
-                </button>
+                  <p className="text-xs leading-relaxed opacity-90 line-clamp-5">
+                    {item.conteudo}
+                  </p>
+                </div>
+
+                <div className="pt-4 mt-4 border-t border-black/10 flex justify-between items-center text-xs font-bold">
+                  <span className="flex items-center gap-1 opacity-70 text-[11px]">
+                    <Pin className="w-3 h-3 rotate-45" /> Post-it IA
+                  </span>
+                  <span className="flex items-center gap-1 opacity-90 text-[11px]">
+                    {item.materia}
+                  </span>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
       </main>
+
+      {/* MODAL: Adicionar Resumo via JSON */}
+      {modalJsonOpen && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-zinc-950 border border-zinc-800 rounded-2xl w-full max-w-lg p-6 space-y-6 shadow-2xl">
+            <div className="flex justify-between items-center">
+              <h3 className="text-base font-bold text-white flex items-center gap-2">
+                <Code className="w-5 h-5 text-red-500" />
+                Adicionar Novo Resumo (JSON)
+              </h3>
+              <button 
+                onClick={() => setModalJsonOpen(false)}
+                className="text-zinc-400 hover:text-white p-1 rounded-lg hover:bg-zinc-900 transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <p className="text-xs text-zinc-400">
+              Cole abaixo o objeto JSON gerado pela IA com os campos: <code className="text-red-400">materia</code>, <code className="text-red-400">categoria</code>, <code className="text-red-400">titulo</code>, <code className="text-red-400">conteudo</code>, <code className="text-red-400">status</code> (Pendente, Revisando, Dominada) e <code className="text-red-400">cor</code> (amarelo, rosa, verde, azul, laranja).
+            </p>
+
+            <textarea 
+              rows={8}
+              value={jsonInput}
+              onChange={(e) => setJsonInput(e.target.value)}
+              placeholder={`{\n  "materia": "Direito Constitucional",\n  "categoria": "Direito",\n  "titulo": "Controle de Constitucionalidade",\n  "conteudo": "Resumo detalhado gerado pela IA...",\n  "status": "Revisando",\n  "cor": "verde"\n}`}
+              className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs font-mono text-zinc-100 focus:outline-none focus:border-red-600 transition-colors"
+            />
+
+            <div className="flex justify-end gap-3">
+              <button 
+                onClick={() => setModalJsonOpen(false)}
+                className="px-4 py-2 rounded-xl bg-zinc-900 text-zinc-300 hover:bg-zinc-800 text-xs font-semibold cursor-pointer transition-all"
+              >
+                Cancelar
+              </button>
+              <button 
+                onClick={handleAdicionarJson}
+                className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold shadow-lg shadow-red-600/20 flex items-center gap-2 cursor-pointer transition-all"
+              >
+                <Plus className="w-4 h-4" /> Ingerir no Quadro
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: Lápis de Edição (Alterar status, conteúdo e cor) */}
+      {postitEmEdicao && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-zinc-950 border border-zinc-800 rounded-2xl w-full max-w-lg p-6 space-y-6 shadow-2xl">
+            <div className="flex justify-between items-center">
+              <h3 className="text-base font-bold text-white flex items-center gap-2">
+                <Edit3 className="w-5 h-5 text-red-500" />
+                Editar Resumo / Post-it
+              </h3>
+              <button 
+                onClick={() => setPostitEmEdicao(null)}
+                className="text-zinc-400 hover:text-white p-1 rounded-lg hover:bg-zinc-900 transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSalvarEdicao} className="space-y-4 text-xs">
+              <div className="space-y-1.5">
+                <label className="text-zinc-400 font-semibold">Título</label>
+                <input 
+                  type="text"
+                  value={postitEmEdicao.titulo}
+                  onChange={(e) => setPostitEmEdicao({...postitEmEdicao, titulo: e.target.value})}
+                  className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-zinc-100 focus:outline-none focus:border-red-600"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-zinc-400 font-semibold">Status de Aprendizado</label>
+                  <select 
+                    value={postitEmEdicao.status}
+                    onChange={(e) => setPostitEmEdicao({...postitEmEdicao, status: e.target.value as any})}
+                    className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-zinc-100 focus:outline-none focus:border-red-600"
+                  >
+                    <option value="Pendente">Pendente</option>
+                    <option value="Revisando">Revisando</option>
+                    <option value="Dominada">Dominada</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-zinc-400 font-semibold">Cor do Post-it</label>
+                  <select 
+                    value={postitEmEdicao.cor}
+                    onChange={(e) => setPostitEmEdicao({...postitEmEdicao, cor: e.target.value as any})}
+                    className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-zinc-100 focus:outline-none focus:border-red-600"
+                  >
+                    <option value="amarelo">Amarelo</option>
+                    <option value="rosa">Rosa</option>
+                    <option value="verde">Verde</option>
+                    <option value="azul">Azul</option>
+                    <option value="laranja">Laranja</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-zinc-400 font-semibold">Conteúdo / Macete da IA</label>
+                <textarea 
+                  rows={5}
+                  value={postitEmEdicao.conteudo}
+                  onChange={(e) => setPostitEmEdicao({...postitEmEdicao, conteudo: e.target.value})}
+                  className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-zinc-100 focus:outline-none focus:border-red-600 leading-relaxed"
+                  required
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 pt-2">
+                <button 
+                  type="button"
+                  onClick={() => setPostitEmEdicao(null)}
+                  className="px-4 py-2 rounded-xl bg-zinc-900 text-zinc-300 hover:bg-zinc-800 font-semibold cursor-pointer transition-all"
+                >
+                  Cancelar
+                </button>
+                <button 
+                  type="submit"
+                  className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold shadow-lg shadow-red-600/20 flex items-center gap-2 cursor-pointer transition-all"
+                >
+                  <Save className="w-4 h-4" /> Salvar Alterações
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

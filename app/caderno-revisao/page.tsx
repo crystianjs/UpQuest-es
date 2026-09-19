@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '../components/Navbar';
 import { supabase } from '@/lib/supabase';
-import { BookMarked, Plus, Pin, CheckCircle2, Clock, AlertCircle, Edit3, Trash2, Code, X, Save, Copy, Check, Loader2, Square, CheckSquare } from 'lucide-react';
+import { BookMarked, Pin, CheckCircle2, Clock, AlertCircle, Edit3, Trash2, Code, X, Save, Copy, Check, Loader2, Square, CheckSquare } from 'lucide-react';
 
 interface CheckItem {
   texto: string;
@@ -178,20 +178,22 @@ export default function CadernoRevisaoPage() {
     }
   };
 
-  const promptIaRecomendado = `Com base nos meus erros nas questões de [INSERIR MATÉRIA AQUI], crie um resumo objetivo em formato estrito de objeto JSON puro, contendo exatamente estas chaves:
+  const promptIaRecomendado = `Com base nos meus erros nas questões de [INSERIR MATÉRIA E O TEMA AQUI], crie um resumo objetivo, cirúrgico e adaptado para qualquer matéria do TJSP. O retorno deve ser estritamente em formato de objeto JSON puro (sem blocos de código markdown ou texto extra fora do JSON), seguindo exatamente esta estrutura:
+
 {
-  "materia": "Nome exato da matéria do TJSP",
+  "materia": "Nome exato da matéria (ex: Direito Administrativo, Informática, Língua Portuguesa)",
   "categoria": "TJSP",
-  "titulo": "Título curto focado no ponto de erro",
-  "conteudo": "Explicação direta do conceito cobrado, pegadinha da banca VUNESP e o motivo do erro",
+  "titulo": "Título curto focado no ponto exato de cobrança da VUNESP",
+  "conteudo": "Explique de forma direta e técnica: 1) O que a banca mais cobra sobre este tema; 2) O que NÃO PODE (as principais pegadinhas, armadilhas textuais e falsas premissas que a VUNESP usa para confundir); 3) Como a prova costuma contextualizar a cobrança.",
   "checklist": [
-    { "texto": "Primeiro ponto crítico ou macete para lembrar", "concluido": false },
-    { "texto": "Segundo ponto crítico ou pegadinha da banca", "concluido": false }
+    { "texto": "Dica de Ouro / Macete prático ou regra de exceção para nunca mais errar este ponto", "concluido": false },
+    { "texto": "Ponto crítico de atenção secundário cobrado pela banca", "concluido": false }
   ],
   "status": "Pendente",
   "cor": "amarelo"
 }
-O campo cor pode ser: "amarelo", "azul", "verde", "rosa" ou "laranja". Traga apenas o JSON.`;
+
+O campo 'cor' deve ser estritamente um destes: "amarelo", "azul", "verde", "rosa" ou "laranja". Retorne APENAS o JSON puro.`;
 
   const copiarPrompt = () => {
     navigator.clipboard.writeText(promptIaRecomendado);
@@ -243,7 +245,7 @@ O campo cor pode ser: "amarelo", "azul", "verde", "rosa" ou "laranja". Traga ape
                 </span>
               </div>
               <p className="text-xs text-zinc-400 mt-1">
-                Post-its Inteligentes com Checklists & Banco de Dados
+                Post-its Inteligentes com Padrão VUNESP e Checklists
               </p>
             </div>
           </div>
@@ -295,7 +297,7 @@ O campo cor pode ser: "amarelo", "azul", "verde", "rosa" ou "laranja". Traga ape
             <div className="space-y-1">
               <h3 className="text-sm font-bold text-white">Nenhum post-it cadastrado</h3>
               <p className="text-xs text-zinc-500 max-w-sm mx-auto">
-                Clique em "Adicionar Resumo (JSON)" para injetar resumos com checklist inteligente.
+                Clique em "Adicionar Resumo (JSON)" para injetar resumos estruturados.
               </p>
             </div>
           </div>
@@ -343,7 +345,7 @@ O campo cor pode ser: "amarelo", "azul", "verde", "rosa" ou "laranja". Traga ape
 
                     {item.checklist && item.checklist.length > 0 && (
                       <div className="space-y-1.5 pt-2 border-t border-black/10">
-                        <span className="text-[10px] uppercase font-bold opacity-60 block">Checklist de Revisão</span>
+                        <span className="text-[10px] uppercase font-bold opacity-60 block">Checklist / Dica de Ouro</span>
                         {item.checklist.map((check, idx) => (
                           <div 
                             key={idx} 
@@ -369,7 +371,7 @@ O campo cor pode ser: "amarelo", "azul", "verde", "rosa" ou "laranja". Traga ape
 
                 <div className="pt-4 mt-4 border-t border-black/10 flex justify-between items-center text-xs font-bold">
                   <span className="flex items-center gap-1 opacity-70 text-[11px]">
-                    <Pin className="w-3 h-3 rotate-45" /> Post-it IA
+                    <Pin className="w-3 h-3 rotate-45" /> VUNESP
                   </span>
                   <span className="flex items-center gap-1 opacity-90 text-[11px] truncate max-w-[140px]" title={item.materia}>
                     {item.materia}
@@ -389,7 +391,7 @@ O campo cor pode ser: "amarelo", "azul", "verde", "rosa" ou "laranja". Traga ape
             <div className="flex justify-between items-center">
               <h3 className="text-base font-bold text-white flex items-center gap-2">
                 <Code className="w-5 h-5 text-red-500" />
-                Adicionar Resumo com Checklists (JSON)
+                Adicionar Resumo Padrão VUNESP (JSON)
               </h3>
               <button 
                 onClick={() => setModalJsonOpen(false)}
@@ -402,7 +404,7 @@ O campo cor pode ser: "amarelo", "azul", "verde", "rosa" ou "laranja". Traga ape
             <div className="bg-zinc-900/90 border border-zinc-800 rounded-xl p-4 space-y-2">
               <div className="flex justify-between items-center">
                 <span className="text-[11px] font-bold text-red-400 uppercase tracking-wider">
-                  1. Copie o prompt otimizado com checklist:
+                  1. Copie o prompt otimizado:
                 </span>
                 <button
                   onClick={copiarPrompt}
@@ -425,7 +427,7 @@ O campo cor pode ser: "amarelo", "azul", "verde", "rosa" ou "laranja". Traga ape
                 rows={8}
                 value={jsonInput}
                 onChange={(e) => setJsonInput(e.target.value)}
-                placeholder={`{\n  "materia": "Direito Constitucional",\n  "categoria": "TJSP",\n  "titulo": "Direitos e Garantias",\n  "conteudo": "Explicação do erro...",\n  "checklist": [\n    { "texto": "Ponto 1", "concluido": false }\n  ],\n  "status": "Revisando",\n  "cor": "verde"\n}`}
+                placeholder={`{\n  "materia": "Direito Administrativo",\n  "categoria": "TJSP",\n  "titulo": "Atos Administrativos",\n  "conteudo": "A banca cobra...",\n  "checklist": [\n    { "texto": "Dica de Ouro...", "concluido": false }\n  ],\n  "status": "Pendente",\n  "cor": "amarelo"\n}`}
                 className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs font-mono text-zinc-100 focus:outline-none focus:border-red-600 transition-colors"
               />
             </div>
@@ -441,7 +443,7 @@ O campo cor pode ser: "amarelo", "azul", "verde", "rosa" ou "laranja". Traga ape
                 onClick={handleAdicionarJson}
                 className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold shadow-lg shadow-red-600/20 flex items-center gap-2 cursor-pointer transition-all"
               >
-                <Plus className="w-4 h-4" /> Salvar no Banco
+                <Code className="w-4 h-4" /> Salvar no Banco
               </button>
             </div>
           </div>
@@ -508,7 +510,7 @@ O campo cor pode ser: "amarelo", "azul", "verde", "rosa" ou "laranja". Traga ape
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-zinc-400 font-semibold">Conteúdo / Explicação</label>
+                <label className="text-zinc-400 font-semibold">Conteúdo / O que a banca cobra e pegadinhas</label>
                 <textarea 
                   rows={5}
                   value={postitEmEdicao.conteudo}

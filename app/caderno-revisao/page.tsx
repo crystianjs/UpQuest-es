@@ -4,7 +4,12 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '../components/Navbar';
 import { supabase } from '@/lib/supabase';
-import { BookMarked, Plus, Pin, CheckCircle2, Clock, AlertCircle, Edit3, Trash2, Code, X, Save, Copy, Check, Loader2 } from 'lucide-react';
+import { BookMarked, Plus, Pin, CheckCircle2, Clock, AlertCircle, Edit3, Trash2, Code, X, Save, Copy, Check, Loader2, Square, CheckSquare } from 'lucide-react';
+
+interface CheckItem {
+  texto: string;
+  concluido: boolean;
+}
 
 interface PostIt {
   id: string;
@@ -13,6 +18,7 @@ interface PostIt {
   categoria: string;
   titulo: string;
   conteudo: string;
+  checklist?: CheckItem[];
   status: 'Pendente' | 'Revisando' | 'Dominada';
   cor: 'amarelo' | 'azul' | 'verde' | 'rosa' | 'laranja';
 }
@@ -46,7 +52,6 @@ export default function CadernoRevisaoPage() {
   const [copiado, setCopiado] = useState(false);
   const [postitEmEdicao, setPostitEmEdicao] = useState<PostIt | null>(null);
 
-  // Buscar sessão e dados do Supabase ao carregar
   useEffect(() => {
     async function carregarDados() {
       try {
@@ -79,7 +84,7 @@ export default function CadernoRevisaoPage() {
     ? postits
     : postits.filter(p => p.materia.toLowerCase() === filtroCategoria.toLowerCase() || p.categoria.toLowerCase() === filtroCategoria.toLowerCase());
 
-  // Adicionar via JSON salvando no Supabase
+  // Adicionar via JSON
   const handleAdicionarJson = async () => {
     if (!userId) return;
     try {
@@ -90,6 +95,7 @@ export default function CadernoRevisaoPage() {
         categoria: parsed.categoria || 'TJSP',
         titulo: parsed.titulo || 'Resumo de Erros',
         conteudo: parsed.conteudo || parsed.resumo || 'Sem conteúdo especificado.',
+        checklist: parsed.checklist || [],
         status: parsed.status || 'Pendente',
         cor: parsed.cor || 'amarelo'
       };
@@ -107,14 +113,33 @@ export default function CadernoRevisaoPage() {
 
       setJsonInput('');
       setModalJsonOpen(false);
-      alert('Resumo salvo e adicionado com sucesso no Banco de Dados!');
+      alert('Resumo com checklist salvo com sucesso no Banco!');
     } catch (err) {
       console.error(err);
-      alert('Erro no formato JSON ou ao salvar no banco. Verifique os campos.');
+      alert('Erro no formato JSON. Verifique se copiou corretamente.');
     }
   };
 
-  // Salvar alterações de edição no Supabase
+  // Alternar Checkbox interativo no card
+  const handleToggleCheck = async (postId: string, index: number) => {
+    const postAlvo = postits.find(p => p.id === postId);
+    if (!postAlvo || !postAlvo.checklist) return;
+
+    const novoChecklist = [...postAlvo.checklist];
+    novoChecklist[index].concluido = !novoChecklist[index].concluido;
+
+    // Atualiza estado local otimista
+    const atualizados = postits.map(p => p.id === postId ? { ...p, checklist: novoChecklist } : p);
+    setPostits(atualizados);
+
+    // Salva no banco
+    await supabase
+      .from('caderno_revisao')
+      .update({ checklist: novoChecklist })
+      .eq('id', postId);
+  };
+
+  // Salvar Edição
   const handleSalvarEdicao = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!postitEmEdicao) return;
@@ -140,21 +165,15 @@ export default function CadernoRevisaoPage() {
     }
   };
 
-  // Remover Post-it do Supabase
+  // Remover Post-it
   const handleRemover = async (id: string) => {
-    if (confirm('Tem certeza que deseja remover este post-it permanentemente?')) {
+    if (confirm('Deseja excluir permanentemente este resumo?')) {
       try {
-        const { error } = await supabase
-          .from('caderno_revisao')
-          .delete()
-          .eq('id', id);
-
+        const { error } = await supabase.from('caderno_revisao').delete().eq('id', id);
         if (error) throw error;
-
         setPostits(postits.filter(p => p.id !== id));
       } catch (err) {
         console.error(err);
-        alert('Erro ao excluir do banco.');
       }
     }
   };
@@ -165,6 +184,10 @@ export default function CadernoRevisaoPage() {
   "categoria": "TJSP",
   "titulo": "Título curto focado no ponto de erro",
   "conteudo": "Explicação direta do conceito cobrado, pegadinha da banca VUNESP e o motivo do erro",
+  "checklist": [
+    { "texto": "Primeiro ponto crítico ou macete para lembrar", "concluido": false },
+    { "texto": "Segundo ponto crítico ou pegadinha da banca", "concluido": false }
+  ],
   "status": "Pendente",
   "cor": "amarelo"
 }
@@ -220,20 +243,18 @@ O campo cor pode ser: "amarelo", "azul", "verde", "rosa" ou "laranja". Traga ape
                 </span>
               </div>
               <p className="text-xs text-zinc-400 mt-1">
-                Post-its Salvos no Banco de Dados & Revisão VUNESP
+                Post-its Inteligentes com Checklists & Banco de Dados
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 w-full md:w-auto">
-            <button 
-              onClick={() => setModalJsonOpen(true)}
-              className="bg-red-600 hover:bg-red-700 text-white font-bold text-xs py-2.5 px-4 rounded-xl shadow-lg shadow-red-600/20 flex items-center gap-2 transition-all cursor-pointer w-full md:w-auto justify-center"
-            >
-              <Code className="w-4 h-4" />
-              Adicionar Resumo (JSON)
-            </button>
-          </div>
+          <button 
+            onClick={() => setModalJsonOpen(true)}
+            className="bg-red-600 hover:bg-red-700 text-white font-bold text-xs py-2.5 px-4 rounded-xl shadow-lg shadow-red-600/20 flex items-center gap-2 transition-all cursor-pointer w-full md:w-auto justify-center"
+          >
+            <Code className="w-4 h-4" />
+            Adicionar Resumo (JSON)
+          </button>
         </div>
 
         {/* Filtros */}
@@ -264,7 +285,7 @@ O campo cor pode ser: "amarelo", "azul", "verde", "rosa" ou "laranja". Traga ape
         {loading ? (
           <div className="py-20 text-center flex flex-col items-center justify-center space-y-3">
             <Loader2 className="w-8 h-8 text-red-600 animate-spin" />
-            <p className="text-xs text-zinc-400">Carregando seus resumos salvos...</p>
+            <p className="text-xs text-zinc-400">Carregando seus post-its...</p>
           </div>
         ) : postits.length === 0 ? (
           <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-16 text-center space-y-4">
@@ -272,9 +293,9 @@ O campo cor pode ser: "amarelo", "azul", "verde", "rosa" ou "laranja". Traga ape
               <Code className="w-6 h-6" />
             </div>
             <div className="space-y-1">
-              <h3 className="text-sm font-bold text-white">Nenhum resumo salvo no banco</h3>
+              <h3 className="text-sm font-bold text-white">Nenhum post-it cadastrado</h3>
               <p className="text-xs text-zinc-500 max-w-sm mx-auto">
-                Clique em "Adicionar Resumo (JSON)" para injetar seus dados e salvá-los permanentemente na sua conta.
+                Clique em "Adicionar Resumo (JSON)" para injetar resumos com checklist inteligente.
               </p>
             </div>
           </div>
@@ -314,16 +335,41 @@ O campo cor pode ser: "amarelo", "azul", "verde", "rosa" ou "laranja". Traga ape
                     {item.titulo}
                   </h3>
 
-                  <div className="max-h-[220px] overflow-y-auto pr-1 scrollbar-thin">
+                  {/* Scroll interno com o texto e o checklist */}
+                  <div className="max-h-[240px] overflow-y-auto pr-1 space-y-3 scrollbar-thin">
                     <p className="text-xs leading-relaxed opacity-90 whitespace-pre-wrap">
                       {item.conteudo}
                     </p>
+
+                    {item.checklist && item.checklist.length > 0 && (
+                      <div className="space-y-1.5 pt-2 border-t border-black/10">
+                        <span className="text-[10px] uppercase font-bold opacity-60 block">Checklist de Revisão</span>
+                        {item.checklist.map((check, idx) => (
+                          <div 
+                            key={idx} 
+                            onClick={() => handleToggleCheck(item.id, idx)}
+                            className="flex items-start gap-2 cursor-pointer group/check bg-black/5 hover:bg-black/10 p-1.5 rounded-lg transition-colors"
+                          >
+                            <button type="button" className="mt-0.5 shrink-0 text-zinc-900">
+                              {check.concluido ? (
+                                <CheckSquare className="w-4 h-4 text-emerald-700" />
+                              ) : (
+                                <Square className="w-4 h-4 opacity-70" />
+                              )}
+                            </button>
+                            <span className={`text-[11px] leading-tight ${check.concluido ? 'line-through opacity-50' : 'opacity-90'}`}>
+                              {check.texto}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
 
                 <div className="pt-4 mt-4 border-t border-black/10 flex justify-between items-center text-xs font-bold">
                   <span className="flex items-center gap-1 opacity-70 text-[11px]">
-                    <Pin className="w-3 h-3 rotate-45" /> Post-it Salvo
+                    <Pin className="w-3 h-3 rotate-45" /> Post-it IA
                   </span>
                   <span className="flex items-center gap-1 opacity-90 text-[11px] truncate max-w-[140px]" title={item.materia}>
                     {item.materia}
@@ -343,7 +389,7 @@ O campo cor pode ser: "amarelo", "azul", "verde", "rosa" ou "laranja". Traga ape
             <div className="flex justify-between items-center">
               <h3 className="text-base font-bold text-white flex items-center gap-2">
                 <Code className="w-5 h-5 text-red-500" />
-                Adicionar Resumo ao Banco (JSON)
+                Adicionar Resumo com Checklists (JSON)
               </h3>
               <button 
                 onClick={() => setModalJsonOpen(false)}
@@ -356,7 +402,7 @@ O campo cor pode ser: "amarelo", "azul", "verde", "rosa" ou "laranja". Traga ape
             <div className="bg-zinc-900/90 border border-zinc-800 rounded-xl p-4 space-y-2">
               <div className="flex justify-between items-center">
                 <span className="text-[11px] font-bold text-red-400 uppercase tracking-wider">
-                  1. Copie este prompt e envie para a IA:
+                  1. Copie o prompt otimizado com checklist:
                 </span>
                 <button
                   onClick={copiarPrompt}
@@ -373,13 +419,13 @@ O campo cor pode ser: "amarelo", "azul", "verde", "rosa" ou "laranja". Traga ape
 
             <div className="space-y-2">
               <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
-                2. Cole o JSON retornado pela IA abaixo:
+                2. Cole o JSON gerado abaixo:
               </span>
               <textarea 
-                rows={6}
+                rows={8}
                 value={jsonInput}
                 onChange={(e) => setJsonInput(e.target.value)}
-                placeholder={`{\n  "materia": "Direito Constitucional",\n  "categoria": "TJSP",\n  "titulo": "Direitos Fundamentais",\n  "conteudo": "Explicação do erro...",\n  "status": "Revisando",\n  "cor": "verde"\n}`}
+                placeholder={`{\n  "materia": "Direito Constitucional",\n  "categoria": "TJSP",\n  "titulo": "Direitos e Garantias",\n  "conteudo": "Explicação do erro...",\n  "checklist": [\n    { "texto": "Ponto 1", "concluido": false }\n  ],\n  "status": "Revisando",\n  "cor": "verde"\n}`}
                 className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs font-mono text-zinc-100 focus:outline-none focus:border-red-600 transition-colors"
               />
             </div>
@@ -409,7 +455,7 @@ O campo cor pode ser: "amarelo", "azul", "verde", "rosa" ou "laranja". Traga ape
             <div className="flex justify-between items-center">
               <h3 className="text-base font-bold text-white flex items-center gap-2">
                 <Edit3 className="w-5 h-5 text-red-500" />
-                Atualizar Resumo no Banco
+                Editar Resumo
               </h3>
               <button 
                 onClick={() => setPostitEmEdicao(null)}
@@ -433,7 +479,7 @@ O campo cor pode ser: "amarelo", "azul", "verde", "rosa" ou "laranja". Traga ape
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-zinc-400 font-semibold">Status de Aprendizado</label>
+                  <label className="text-zinc-400 font-semibold">Status</label>
                   <select 
                     value={postitEmEdicao.status}
                     onChange={(e) => setPostitEmEdicao({...postitEmEdicao, status: e.target.value as any})}
@@ -446,7 +492,7 @@ O campo cor pode ser: "amarelo", "azul", "verde", "rosa" ou "laranja". Traga ape
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-zinc-400 font-semibold">Cor do Post-it</label>
+                  <label className="text-zinc-400 font-semibold">Cor</label>
                   <select 
                     value={postitEmEdicao.cor}
                     onChange={(e) => setPostitEmEdicao({...postitEmEdicao, cor: e.target.value as any})}
@@ -462,7 +508,7 @@ O campo cor pode ser: "amarelo", "azul", "verde", "rosa" ou "laranja". Traga ape
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-zinc-400 font-semibold">Conteúdo / Macete</label>
+                <label className="text-zinc-400 font-semibold">Conteúdo / Explicação</label>
                 <textarea 
                   rows={5}
                   value={postitEmEdicao.conteudo}

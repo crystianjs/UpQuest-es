@@ -38,14 +38,12 @@ export default function DesempenhoPage() {
 
       const userId = session.user.id;
 
-      // Buscar questões do utilizador logado
       const { data: qData } = await supabase
         .from('user_questions')
         .select('*')
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
-      // Buscar redações do utilizador logado
       const { data: rData } = await supabase
         .from('redaccoes')
         .select('*')
@@ -60,10 +58,9 @@ export default function DesempenhoPage() {
     carregarDados();
   }, [router]);
 
-  // Totais gerais
   const totalFeitasGeral = questoes.reduce((acc, q) => acc + q.total_feitas, 0);
   const totalAcertosGeral = questoes.reduce((acc, q) => acc + q.acertos, 0);
-  const aproveitamentoGeral = totalFeitasGeral > 0 ? ((totalAcertosGeral / totalFeitasGeral) * 100).toFixed(1) : '0';
+  const aproveitamento = totalFeitasGeral > 0 ? ((totalAcertosGeral / totalFeitasGeral) * 100).toFixed(1) : '0';
 
   return (
     <div className="min-h-screen bg-black text-zinc-100 font-sans selection:bg-red-600 selection:text-white">
@@ -90,7 +87,6 @@ export default function DesempenhoPage() {
           <div className="text-center py-20 text-zinc-500 text-sm">A carregar métricas...</div>
         ) : (
           <>
-            {/* Cards de Métricas Gerais */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               
               <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 shadow-xl relative overflow-hidden">
@@ -103,7 +99,7 @@ export default function DesempenhoPage() {
               <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 shadow-xl relative overflow-hidden">
                 <div className="absolute top-0 left-0 w-1.5 h-full bg-emerald-600"></div>
                 <p className="text-xs font-bold uppercase tracking-wider text-zinc-400">Taxa de Acerto</p>
-                <h3 className="text-3xl font-black text-white mt-2">{aproveitamento%}%</h3>
+                <h3 className="text-3xl font-black text-white mt-2">{aproveitamento}%</h3>
                 <span className="text-xs text-zinc-500 mt-1 block">{totalAcertosGeral} acertos corretos</span>
               </div>
 
@@ -116,10 +112,8 @@ export default function DesempenhoPage() {
 
             </div>
 
-            {/* Listas Recentes */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               
-              {/* Histórico de Questões */}
               <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 shadow-xl space-y-4">
                 <h2 className="text-lg font-bold text-white flex items-center gap-2">
                   <Award className="w-5 h-5 text-red-500" />
@@ -147,7 +141,6 @@ export default function DesempenhoPage() {
                 )}
               </div>
 
-              {/* Histórico de Redações */}
               <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 shadow-xl space-y-4">
                 <h2 className="text-lg font-bold text-white flex items-center gap-2">
                   <FileText className="w-5 h-5 text-red-500" />

@@ -1,32 +1,48 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Navbar from '../components/Navbar';
 import { supabase } from '@/lib/supabase';
-import { BookOpen, CheckCircle2, AlertCircle, Award, Filter, PenTool, Clock } from 'lucide-react';
+import { AlertCircle, Award, Filter, PenTool } from 'lucide-react';
 
 export default function DesempenhoPage() {
+  const router = useRouter();
   const [questoes, setQuestoes] = useState<any[]>([]);
   const [redacoes, setRedacoes] = useState<any[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [filtroMateria, setFiltroMateria] = useState('TODAS');
+  const [userEmail, setUserEmail] = useState('');
 
   useEffect(() => {
-    async function carregarDados() {
+    async function carregarDadosDoUtilizador() {
       try {
-        // Buscar questões
+        setCarregando(true);
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (!session) {
+          router.push('/');
+          return;
+        }
+
+        const currentUserId = session.user.id;
+        setUserEmail(session.user.email || '');
+
+        // Busca exclusivamente as questões filtrando por user_id
         const { data: qData, error: qError } = await supabase
           .from('user_questions')
           .select('*')
+          .eq('user_id', currentUserId)
           .order('created_at', { ascending: false });
 
         if (qError) throw qError;
         if (qData) setQuestoes(qData);
 
-        // Buscar redações da tabela correta: redaccoes
+        // Busca exclusivamente as redações filtrando por user_id
         const { data: rData, error: rError } = await supabase
           .from('redaccoes')
           .select('*')
+          .eq('user_id', currentUserId)
           .order('created_at', { ascending: false });
 
         if (rError) throw rError;
@@ -39,16 +55,15 @@ export default function DesempenhoPage() {
       }
     }
 
-    carregarDados();
-  }, []);
+    carregarDadosDoUtilizador();
+  }, [router]);
 
-  // Cálculos de Métricas Gerais de Questões
+  // Métricas
   const totalResolvidas = questoes.reduce((acc, curr) => acc + (Number(curr.total_feitas) || 0), 0);
   const totalAcertos = questoes.reduce((acc, curr) => acc + (Number(curr.acertos) || 0), 0);
   const totalErros = questoes.reduce((acc, curr) => acc + (Number(curr.erros) || 0), 0);
   const taxaAcertoGeral = totalResolvidas > 0 ? Math.round((totalAcertos / totalResolvidas) * 100) : 0;
 
-  // Agrupamento por Matéria
   const materiasMap: { [key: string]: { feitas: number; acertos: number; erros: number } } = {};
   questoes.forEach((q) => {
     if (!materiasMap[q.materia]) {
@@ -70,12 +85,12 @@ export default function DesempenhoPage() {
 
       <main className="max-w-7xl mx-auto px-6 py-8 space-y-8">
         
-        {/* Cabeçalho do Painel */}
+        {/* Cabeçalho */}
         <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-white">Painel de Desempenho</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-white">Painel de Desempenho — UPQUESTOS</h1>
             <p className="text-sm text-zinc-400 mt-1">
-              Ambiente individual vinculado à conta: <span className="text-red-400">crystianjs09@gmail.com</span>
+              Sessão iniciada como: <span className="text-red-400 font-semibold">{userEmail}</span>
             </p>
           </div>
           <div className="bg-red-950/40 border border-red-600/40 px-4 py-2 rounded-xl text-xs font-semibold text-red-400 flex items-center gap-2">
@@ -84,7 +99,7 @@ export default function DesempenhoPage() {
           </div>
         </div>
 
-        {/* Cards de Métricas */}
+        {/* Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 shadow-xl relative overflow-hidden">
             <div className="absolute top-0 left-0 w-1 h-full bg-red-600"></div>
@@ -108,15 +123,15 @@ export default function DesempenhoPage() {
           </div>
         </div>
 
-        {/* Seção de Progresso por Matéria (Questões) */}
-        {Object.keys(materiasMap).length === 0 ? (
+        {/* Desempenho por Matéria */}
+        {Object.keys(materiasMap).length === 0 && !carregando ? (
           <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-8 shadow-xl text-center py-12">
             <div className="w-12 h-12 mx-auto rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-red-500 mb-4">
               <AlertCircle className="w-6 h-6" />
             </div>
-            <h3 className="text-lg font-bold text-white mb-1">Nenhum registro de questão encontrado</h3>
+            <h3 className="text-lg font-bold text-white mb-1">Ainda sem registos de questões</h3>
             <p className="text-sm text-zinc-400 max-w-md mx-auto">
-              Utilize o menu de <span className="text-red-400">Registro de Questões</span> para alimentar seus gráficos de matérias.
+              Utilize o menu de <span className="text-red-400">Registo de Questões</span> para alimentar os gráficos do seu perfil.
             </p>
           </div>
         ) : (
@@ -173,19 +188,19 @@ export default function DesempenhoPage() {
           </div>
         )}
 
-        {/* Seção de Histórico de Redações Praticadas */}
+        {/* Histórico de Redações */}
         <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 md:p-8 shadow-xl space-y-6">
           <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
             <h3 className="text-lg font-bold text-white flex items-center gap-2">
               <PenTool className="w-5 h-5 text-red-500" />
-              Histórico de Redações Praticadas ({redacoes.length})
+              As suas Redações Praticadas ({redacoes.length})
             </h3>
             <span className="text-xs text-zinc-400">Padrão Dissertativo VUNESP</span>
           </div>
 
-          {redacoes.length === 0 ? (
+          {redacoes.length === 0 && !carregando ? (
             <div className="text-center py-10 text-zinc-500 text-sm">
-              Ainda nenhuma redação foi salva. Utilize a aba <span className="text-red-400">Treinar Redação</span> para começar.
+              Ainda nenhuma redação guardada para esta conta.
             </div>
           ) : (
             <div className="space-y-4">

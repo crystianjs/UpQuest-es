@@ -1,5 +1,5 @@
 <p align="center">
-  <h1 align="center">🚀 UPQUEST-ES | TJSP 2026</h1>
+  <h1 align="center">🚀 UPQUESTOES | TJSP 2026</h1>
 </p>
 
 <p align="center">
@@ -21,7 +21,7 @@
 
 ## 💻 Sobre o Projeto
 
-O **UpQuest-es** é uma plataforma web de alta performance desenvolvida para otimizar os estudos e o acompanhamento de desempenho voltado para concursos públicos, com foco especial no edital de **Escrevente Técnico Judiciário do Tribunal de Justiça de São Paulo (TJSP)** sob os padrões da banca **VUNESP**.
+O **UPQUESTOES** é uma plataforma web de alta performance desenvolvida para otimizar os estudos e o acompanhamento de desempenho voltado para concursos públicos, com foco especial no edital de **Escrevente Técnico Judiciário do Tribunal de Justiça de São Paulo (TJSP)** sob os padrões da banca **VUNESP**.
 
 O sistema conta com registro dinâmico de questões por disciplina oficial, cronômetro integrado para treinamento de redações dissertativas e um painel de controle analítico em tempo real.
 
@@ -53,4 +53,4 @@ Se quiseres clonar e executar o projeto na tua máquina para fins de edição e 
 
 1. **Clone o repositório:**
    ```bash
-   git clone [https://github.com/crystianjs/upquest-es.git](https://github.com/crystianjs/upquest-es.git)
+   git clone [https://github.com/crystianjs/UPQUESTOES.git](https://github.com/crystianjs/UPQUESTOES.git)

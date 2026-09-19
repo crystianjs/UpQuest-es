@@ -54,7 +54,7 @@ export default function CadastroPage() {
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-emerald-400">Criar Conta</h1>
           <p className="text-sm text-slate-400 mt-2">
-            UpQuest-es • Concurso TJSP (VUNESP)
+            UpQueQUESTOES• Concurso TJSP (VUNESP)
           </p>
         </div>
 

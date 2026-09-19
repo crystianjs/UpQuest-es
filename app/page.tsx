@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
+import { setUsuarioAtivo } from '@/lib/auth';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -18,6 +19,11 @@ export default function LoginPage() {
     setErro('');
 
     try {
+      // Guarda o e-mail ativo no localStorage para isolar os dados nas páginas seguintes
+      if (email.trim()) {
+        setUsuarioAtivo(email.trim());
+      }
+
       // Tentativa de autenticação real via Supabase se configurado, ou redirecionamento direto
       const { error } = await supabase.auth.signInWithPassword({
         email,
@@ -25,14 +31,14 @@ export default function LoginPage() {
       });
 
       if (error) {
-        // Se houver erro no banco mas você quiser simular acesso fluido, redirecionamos direto para o painel
+        // Se houver erro no banco mas quisermos simular acesso fluido, prosseguimos para o painel
         console.warn('Aviso de auth do Supabase, prosseguindo para o painel:', error.message);
       }
 
       router.push('/desempenho');
     } catch (err: any) {
       setErro('Erro ao conectar com o banco de dados.');
-      router.push('/desempenho'); // Garante que nunca trave o usuário
+      router.push('/desempenho'); // Garante que nunca trave o utilizador
     } finally {
       setLoading(false);
     }
@@ -54,7 +60,7 @@ export default function LoginPage() {
 
         <div className="text-center mb-8">
           <h1 className="text-2xl font-black tracking-wider text-white">
-            UPQUESTO<span className="text-red-600">ES</span>
+            UPQUEST<span className="text-red-600">OS</span>
           </h1>
           <p className="text-xs font-medium text-zinc-400 mt-1 uppercase tracking-widest">
             Acesso Restrito — Concurso TJSP (VUNESP)
@@ -97,9 +103,9 @@ export default function LoginPage() {
           <button 
             type="submit"
             disabled={loading}
-            className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg shadow-lg shadow-red-600/30 transition-all duration-200 text-sm tracking-wide mt-2 disabled:opacity-50"
+            className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg shadow-lg shadow-red-600/30 transition-all duration-200 text-sm tracking-wide mt-2 disabled:opacity-50 cursor-pointer"
           >
-            {loading ? 'Autenticando...' : 'Entrar na Plataforma'}
+            {loading ? 'A autenticar...' : 'Entrar na Plataforma'}
           </button>
         </form>
 

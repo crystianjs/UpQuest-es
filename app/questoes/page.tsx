@@ -1,192 +1,175 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
+import Navbar from '../components/Navbar';
 import { supabase } from '@/lib/supabase';
-import FraseMotivadora from '../components/FraseMotivadora';
+import { getUsuarioAtivo } from '@/lib/auth';
+import { CheckCircle, AlertCircle, BookOpen } from 'lucide-react';
+
+const MATERIAS_TJSP = [
+  'Língua Portuguesa',
+  'Direito Penal',
+  'Direito Processual Penal',
+  'Direito Processual Civil',
+  'Direito Constitucional',
+  'Direito Administrativo',
+  'Normas da Corregedoria',
+  'Matemática',
+  'Raciocínio Lógico',
+  'Informática',
+  'Atualidades',
+  'Estatuto da Pessoa com Deficiência'
+];
 
 export default function QuestoesPage() {
-  const [materia, setMateria] = useState('Língua Portuguesa');
+  const [materia, setMateria] = useState(MATERIAS_TJSP[0]);
   const [totalFeitas, setTotalFeitas] = useState('');
   const [acertos, setAcertos] = useState('');
   const [erros, setErros] = useState('');
-  const [pontoMelhoria, setPontoMelhoria] = useState('');
-  const [carregando, setCarregando] = useState(false);
+  const [salvando, setSalvando] = useState(false);
   const [sucesso, setSucesso] = useState(false);
-  const [erroMsg, setErroMsg] = useState('');
+  const [erro, setErro] = useState('');
 
-  const listaMaterias = [
-    'Língua Portuguesa',
-    'Direito Penal',
-    'Direito Processual Penal',
-    'Direito Processual Civil',
-    'Direito Constitucional',
-    'Direito Administrativo',
-    'Normas da Corregedoria',
-    'Matemática',
-    'Raciocínio Lógico',
-    'Informática',
-    'Atualidades',
-    'Estatuto da Pessoa com Deficiência'
-  ];
+  const usuarioAtual = getUsuarioAtivo();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  async function handleSalvarQuestoes(e: React.FormEvent) {
     e.preventDefault();
-    setCarregando(true);
-    setErroMsg('');
+    const feitasNum = parseInt(totalFeitas) || 0;
+    const acertosNum = parseInt(acertos) || 0;
+    const errosNum = parseInt(erros) || 0;
+
+    if (feitasNum <= 0) {
+      setErro('Insira um número válido de questões feitas.');
+      return;
+    }
+
+    if (acertosNum + errosNum !== feitasNum) {
+      setErro('A soma de acertos e erros deve ser igual ao total de questões feitas.');
+      return;
+    }
+
+    setSalvando(true);
+    setErro('');
+    setSucesso(false);
 
     try {
       const { error } = await supabase.from('user_questions').insert([
         {
           materia: materia,
-          total_feitas: Number(totalFeitas) || 0,
-          acertos: Number(acertos) || 0,
-          erros: Number(erros) || 0,
-          ponto_melhoria: pontoMelhoria || ''
+          total_feitas: feitasNum,
+          acertos: acertosNum,
+          erros: errosNum,
+          user_email: usuarioAtual
         }
       ]);
 
       if (error) throw error;
 
-      // Limpa os campos automaticamente
+      setSucesso(true);
       setTotalFeitas('');
       setAcertos('');
       setErros('');
-      setPontoMelhoria('');
-      
-      setSucesso(true);
-      setTimeout(() => setSucesso(false), 4000);
-
     } catch (err: any) {
-      console.error('Erro detalhado Supabase:', err);
-      setErroMsg(err.message || 'Erro ao salvar no banco de dados.');
+      console.error('Erro ao guardar questões:', err);
+      setErro('Erro ao guardar o registo de questões.');
     } finally {
-      setCarregando(false);
+      setSalvando(false);
     }
-  };
+  }
 
   return (
-    <div className="min-h-screen bg-black text-zinc-100 flex flex-col font-sans selection:bg-red-600 selection:text-white">
-      {/* Top Header */}
-      <header className="border-b border-zinc-800 bg-zinc-950/80 backdrop-blur sticky top-0 z-50 px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center space-x-3">
-          <div className="w-3 h-8 bg-red-600 rounded-sm shadow-lg shadow-red-600/50"></div>
-          <h1 className="text-xl font-black tracking-wider text-white">
-            UPQUESTO<span className="text-red-600">ES</span> <span className="text-xs font-normal text-zinc-400 ml-2">| TJSP 2026</span>
-          </h1>
-        </div>
-        <div className="flex items-center gap-4">
-          <Link href="/desempenho" className="text-sm font-medium text-zinc-400 hover:text-red-500 transition-colors">
-            Desempenho & Gráficos
-          </Link>
-          <Link href="/desempenho" className="text-sm font-medium bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg shadow-lg shadow-red-600/30 transition-all">
-            ← Voltar ao Painel Geral
-          </Link>
-        </div>
-      </header>
+    <div className="min-h-screen bg-black text-zinc-100 font-sans selection:bg-red-600 selection:text-white">
+      <Navbar />
 
-      {/* Main Content */}
-      <main className="flex-1 max-w-3xl w-full mx-auto p-6 md:p-10 space-y-6">
-        <div className="border-b border-zinc-800 pb-4">
-          <h2 className="text-2xl font-bold tracking-tight text-white flex items-center gap-3">
-            <span className="w-3.5 h-3.5 rounded-full bg-red-600 shadow-[0_0_12px_rgba(220,38,38,0.8)] animate-pulse"></span>
-            Registro de Desempenho em Questões
-          </h2>
+      <main className="max-w-3xl mx-auto px-6 py-8 space-y-8">
+        
+        <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 shadow-xl">
+          <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+            <BookOpen className="w-6 h-6 text-red-500" />
+            Registo de Questões — UPQUESTOS
+          </h1>
           <p className="text-sm text-zinc-400 mt-1">
-            Lance seus blocos de estudo diários por disciplina oficial, quantidade, acertos, erros e pontos de melhoria.
+            Registar progresso para a conta: <span className="text-red-400 font-semibold">{usuarioAtual}</span>
           </p>
         </div>
 
-        {/* Caixa de Reflexão Diária */}
-        <FraseMotivadora />
-
         {sucesso && (
-          <div className="p-4 rounded-lg bg-red-950/40 border border-red-600/50 text-red-200 text-sm flex items-center justify-between">
-            <span>Desempenho registrado e limpo com sucesso!</span>
-            <span className="text-xs font-bold text-red-400">SALVO</span>
+          <div className="bg-emerald-950/40 border border-emerald-600/40 p-4 rounded-xl text-emerald-400 text-sm flex items-center gap-3">
+            <CheckCircle className="w-5 h-5 shrink-0" />
+            Registo de questões guardado com sucesso!
           </div>
         )}
 
-        {erroMsg && (
-          <div className="p-4 rounded-lg bg-red-900/50 border border-red-500 text-red-100 text-sm">
-            <span>{erroMsg}</span>
+        {erro && (
+          <div className="bg-red-950/40 border border-red-600/40 p-4 rounded-xl text-red-400 text-sm flex items-center gap-3">
+            <AlertCircle className="w-5 h-5 shrink-0" />
+            {erro}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-6 bg-zinc-900/50 border border-zinc-800 p-6 md:p-8 rounded-xl shadow-2xl">
-          <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-2">Matéria / Disciplina (Edital TJSP)</label>
+        <form onSubmit={handleSalvarQuestoes} className="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 md:p-8 shadow-xl space-y-6">
+          
+          <div className="space-y-2">
+            <label className="text-xs font-bold uppercase tracking-wider text-zinc-400">Disciplina / Matéria</label>
             <select 
-              value={materia} 
+              value={materia}
               onChange={(e) => setMateria(e.target.value)}
-              className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-3 text-sm text-zinc-200 focus:outline-none focus:border-red-600 transition-colors"
+              className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-zinc-100 focus:outline-none focus:border-red-600 transition-colors"
             >
-              {listaMaterias.map((mat) => (
+              {MATERIAS_TJSP.map((mat) => (
                 <option key={mat} value={mat}>{mat}</option>
               ))}
             </select>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-2">Qtd. Feitas</label>
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-zinc-400">Total Feitas</label>
               <input 
                 type="number" 
-                required
                 min="1"
                 value={totalFeitas}
                 onChange={(e) => setTotalFeitas(e.target.value)}
-                placeholder="Ex: 24"
-                className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-3 text-sm text-zinc-200 focus:outline-none focus:border-red-600 transition-colors"
+                placeholder="Ex: 20"
+                className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-zinc-100 focus:outline-none focus:border-red-600 transition-colors"
               />
             </div>
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-2">Acertos</label>
+
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-zinc-400">Acertos</label>
               <input 
                 type="number" 
-                required
                 min="0"
                 value={acertos}
                 onChange={(e) => setAcertos(e.target.value)}
-                placeholder="Ex: 20"
-                className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-3 text-sm text-emerald-400 font-bold focus:outline-none focus:border-red-600 transition-colors"
+                placeholder="Ex: 16"
+                className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-zinc-100 focus:outline-none focus:border-red-600 transition-colors"
               />
             </div>
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-2">Erros</label>
+
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-zinc-400">Erros</label>
               <input 
                 type="number" 
-                required
                 min="0"
                 value={erros}
                 onChange={(e) => setErros(e.target.value)}
                 placeholder="Ex: 4"
-                className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-3 text-sm text-red-500 font-bold focus:outline-none focus:border-red-600 transition-colors"
+                className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-zinc-100 focus:outline-none focus:border-red-600 transition-colors"
               />
             </div>
           </div>
 
-          <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-2">Ponto de Melhoria / Dificuldade Encontrada</label>
-            <textarea 
-              rows={4}
-              value={pontoMelhoria}
-              onChange={(e) => setPontoMelhoria(e.target.value)}
-              placeholder="Ex: Revisar crase e regras de colocação pronominal..."
-              className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-4 text-sm text-zinc-200 focus:outline-none focus:border-red-600 transition-colors resize-none"
-            ></textarea>
-          </div>
+          <button 
+            type="submit"
+            disabled={salvando}
+            className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3.5 px-6 rounded-xl transition-colors shadow-lg shadow-red-600/20 disabled:opacity-50 cursor-pointer"
+          >
+            {salvando ? 'A guardar...' : 'Guardar Registo de Questões'}
+          </button>
 
-          <div className="pt-4 flex justify-end">
-            <button 
-              type="submit"
-              disabled={carregando}
-              className="bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white font-bold px-8 py-3 rounded-lg shadow-lg shadow-red-600/20 transition-all duration-200 text-sm tracking-wide cursor-pointer flex items-center gap-2"
-            >
-              {carregando ? 'Salvando...' : 'Salvar Registro de Desempenho'}
-            </button>
-          </div>
         </form>
+
       </main>
     </div>
   );
